@@ -1,0 +1,475 @@
+/* ==========================================================================
+   Reyes Sitework — MeshCentral brand layer
+   Loaded after styles/style.css. Presentation only; no functional changes.
+   Palette: ink #101c24 · clay #b85c2e · paper #f7f4ee · sand #f0b184
+   ========================================================================== */
+
+:root {
+    --rs-ink: #101c24;
+    --rs-ink-soft: #1b2c37;
+    --rs-ink-line: #2b3c47;
+    --rs-clay: #b85c2e;
+    --rs-clay-deep: #9c4a22;
+    --rs-paper: #f7f4ee;
+    --rs-paper-deep: #efe9df;
+    --rs-line: #ddd5c8;
+    --rs-sand: #f0b184;
+    --rs-muted: #8794a3;
+}
+
+/* --------------------------------------------------------------------------
+   LOGIN — construction photo background + frosted card
+   -------------------------------------------------------------------------- */
+
+html body#body.login {
+    background: #0b151c !important;
+}
+
+body#body.login #centralTable {
+    width: 100%;
+    height: 100%;
+}
+
+body#body.login #logincell {
+    padding: 28px 18px 20px;
+}
+
+#loginPicture {
+    display: block;
+    width: min(420px, 84vw);
+    height: auto;
+    margin: 0 auto 8px;
+}
+
+#loginPicture:not([src]) {
+    display: none;
+}
+
+/* The native 46px server title becomes the small brand subtitle. */
+body#body.login #logincell > div[style*="font-size:46px"] {
+    font-family: "Trebuchet MS", Arial, sans-serif !important;
+    font-size: 12px !important;
+    line-height: 1.5;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--rs-sand) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .65) !important;
+    padding: 0 0 20px !important;
+    font-weight: 700 !important;
+}
+
+body#body.login #logincell > div[style*="font-size:46px"] sup {
+    display: none !important;
+}
+
+#loginpanel,
+#createpanel,
+#resetpanel,
+#tokenpanel,
+#resettokenpanel,
+#resetpasswordpanel,
+#checkemailpanel,
+#waitpushpanel {
+    background: rgba(13, 24, 31, .78) !important;
+    border: 1px solid rgba(255, 255, 255, .16) !important;
+    border-radius: 16px !important;
+    width: 360px !important;
+    max-width: calc(100vw - 48px) !important;
+    padding: 20px !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .5) !important;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    color: #dfe5e8 !important;
+}
+
+#loginpanel table,
+#createpanel table,
+#resetpanel table,
+#tokenpanel table {
+    color: #dfe5e8;
+}
+
+#loginpanel input[type=text],
+#loginpanel input[type=password],
+#loginpanel input[type=email],
+#createpanel input[type=text],
+#createpanel input[type=password],
+#createpanel input[type=email],
+#resetpanel input[type=text],
+#resetpanel input[type=password],
+#tokenpanel input[type=text],
+#tokenpanel input[type=password] {
+    background: rgba(255, 255, 255, .96) !important;
+    border: 1px solid rgba(255, 255, 255, .5) !important;
+    border-radius: 8px !important;
+    padding: 11px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    color: var(--rs-ink) !important;
+    font-size: 14px !important;
+}
+
+#loginpanel input:focus,
+#createpanel input:focus,
+#resetpanel input:focus,
+#tokenpanel input:focus {
+    outline: 2px solid var(--rs-sand) !important;
+    outline-offset: 1px;
+}
+
+#loginButton,
+#createpanel input[type=submit],
+#createpanel input[type=button],
+#resetpanel input[type=submit],
+#resetpanel input[type=button],
+#tokenpanel input[type=submit],
+#tokenpanel input[type=button] {
+    background: var(--rs-clay) !important;
+    border: 1px solid var(--rs-clay-deep) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    padding: 11px 12px !important;
+    width: 100% !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    letter-spacing: .04em;
+    cursor: pointer;
+}
+
+#loginButton:hover,
+#createpanel input[type=submit]:hover,
+#createpanel input[type=button]:hover,
+#resetpanel input[type=submit]:hover,
+#resetpanel input[type=button]:hover,
+#tokenpanel input[type=submit]:hover,
+#tokenpanel input[type=button]:hover {
+    background: var(--rs-clay-deep) !important;
+}
+
+#loginpanel a,
+#createpanel a,
+#resetpanel a,
+#tokenpanel a {
+    color: var(--rs-sand) !important;
+}
+
+#loginpanel #message1,
+#createpanel #message2 {
+    color: #ffd9c2 !important;
+}
+
+#welcomeText {
+    color: #e6ebee !important;
+    font-size: 13px !important;
+    line-height: 1.55;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .8);
+    margin: 14px auto 0 !important;
+    max-width: 560px;
+}
+
+#flink {
+    color: #b9c4c9 !important;
+}
+
+#flink a {
+    color: #cfd8dd !important;
+}
+
+@media (max-width: 640px) {
+    body#body.login #logincell {
+        padding: 18px 12px 14px;
+    }
+
+    #flink {
+        float: none !important;
+        text-align: center;
+        margin: 0 10px !important;
+        line-height: 1.55;
+    }
+
+    #flink + #flink {
+        margin-top: 2px !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   APP SHELL — masthead, left bar, top menu, footer
+   -------------------------------------------------------------------------- */
+
+body {
+    background-color: #e9e4da;
+}
+
+#container {
+    background-color: var(--rs-paper);
+    border-right-color: var(--rs-line);
+    border-left-color: var(--rs-line);
+}
+
+#masthead {
+    background-color: var(--rs-ink) !important;
+    background-image: url('/logo.png') !important;
+    background-repeat: no-repeat !important;
+    background-position: 16px center !important;
+    background-size: auto 66px !important;
+    border-bottom: 2px solid var(--rs-clay);
+}
+
+#masthead .title,
+#masthead .title2 {
+    display: none !important;
+}
+
+#masthead p,
+#logoutControlSpan,
+#logoutControlSpan2,
+#idleTimeoutNotify {
+    color: #cfd8dd !important;
+}
+
+#page_leftbar {
+    background: linear-gradient(180deg, var(--rs-ink) 0%, #16262f 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, .06);
+}
+
+.lbbutton {
+    background-color: var(--rs-ink-soft) !important;
+    opacity: .55;
+}
+
+.lbbutton:hover {
+    background-color: #22323d !important;
+    opacity: .92;
+}
+
+.lbbuttonsel,
+.lbbuttonsel2 {
+    background-color: var(--rs-clay) !important;
+    opacity: 1;
+}
+
+#MainMenuSpan,
+#MainSubMenuSpan,
+#MeshSubMenuSpan,
+#EventsSubMenuSpan,
+#UserSubMenuSpan,
+#UsersSubMenuSpan,
+#ServerSubMenuSpan,
+#MainSubMenu,
+#MeshSubMenu,
+#UserSubMenu,
+#ServerSubMenu,
+#UserDummyMenu,
+#PluginSubMenu {
+    background-color: var(--rs-ink) !important;
+}
+
+.style3,
+.style3x {
+    background-color: var(--rs-ink-soft) !important;
+}
+
+.style3x:hover {
+    background-color: #22323d !important;
+}
+
+.style3x.fullselect,
+.style3sel {
+    background-color: var(--rs-clay) !important;
+}
+
+#footer {
+    background-color: var(--rs-ink) !important;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+.footer1,
+.footer2 {
+    color: #aebac1 !important;
+}
+
+#footer a {
+    color: #d9e2e6 !important;
+}
+
+/* --------------------------------------------------------------------------
+   PAGES — headings, device toolbar, links, buttons
+   -------------------------------------------------------------------------- */
+
+#p1title h1,
+#p2title h1,
+#p10title h1,
+#p11title h1,
+#p12title h1,
+#p13title h1 {
+    color: var(--rs-ink);
+    letter-spacing: -.01em;
+}
+
+#p1title h1 {
+    padding-left: 11px;
+    border-left: 3px solid var(--rs-clay);
+    line-height: 1.15;
+}
+
+#devListToolbarSpan {
+    background-color: var(--rs-paper-deep) !important;
+    border-top: 1px solid var(--rs-line);
+    border-bottom: 1px solid var(--rs-line);
+}
+
+#SearchInput {
+    background: #fff !important;
+    border: 1px solid #c9c0b1 !important;
+    border-radius: 6px !important;
+    padding: 3px 8px !important;
+    color: var(--rs-ink) !important;
+}
+
+#column_l a {
+    color: var(--rs-clay-deep);
+}
+
+#column_l a:hover {
+    color: var(--rs-clay);
+}
+
+#p1 input[type=button],
+#p2 input[type=button],
+#p10 input[type=button],
+#p11 input[type=button],
+#p12 input[type=button],
+#p13 input[type=button],
+#dialog input[type=button] {
+    background: var(--rs-paper);
+    border: 1px solid #c9c0b1;
+    border-radius: 6px;
+    color: var(--rs-ink);
+    padding: 3px 9px;
+    cursor: pointer;
+}
+
+#p1 input[type=button]:hover,
+#p2 input[type=button]:hover,
+#p10 input[type=button]:hover,
+#p11 input[type=button]:hover,
+#p12 input[type=button]:hover,
+#p13 input[type=button]:hover,
+#dialog input[type=button]:hover {
+    background: var(--rs-paper-deep);
+    border-color: var(--rs-clay);
+}
+
+#p1 input[type=button]:disabled,
+#p2 input[type=button]:disabled,
+#p10 input[type=button]:disabled,
+#p11 input[type=button]:disabled,
+#dialog input[type=button]:disabled {
+    background: #f1eee8;
+    border-color: var(--rs-line);
+    color: #9aa5ad;
+    cursor: default;
+}
+
+#idx_dlgOkButton,
+#idx_dlgOkButton2 {
+    background: var(--rs-clay) !important;
+    border-color: var(--rs-clay-deep) !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+#idx_dlgOkButton:hover,
+#idx_dlgOkButton2:hover {
+    background: var(--rs-clay-deep) !important;
+}
+
+/* --------------------------------------------------------------------------
+   REMOTE DESKTOP — warm tool rails, clay primary action
+   -------------------------------------------------------------------------- */
+
+#deskarea1.areaHead,
+#deskarea4.areaFoot {
+    background: var(--rs-paper-deep) !important;
+    color: var(--rs-ink) !important;
+    border-top: 1px solid var(--rs-line);
+    border-bottom: 1px solid var(--rs-line);
+}
+
+#deskarea1 input[type=button],
+#deskarea4 input[type=button] {
+    background: #fff !important;
+    border: 1px solid #c9c0b1 !important;
+    border-radius: 5px !important;
+    color: var(--rs-ink) !important;
+    padding: 2px 8px !important;
+}
+
+#deskarea1 input[type=button]:hover,
+#deskarea4 input[type=button]:hover {
+    background: var(--rs-paper) !important;
+    border-color: var(--rs-clay) !important;
+}
+
+#deskarea1 #connectbutton1 {
+    background: var(--rs-clay) !important;
+    border-color: var(--rs-clay-deep) !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+#deskarea1 #connectbutton1:disabled {
+    background: #d8cfc2 !important;
+    border-color: #c9c0b1 !important;
+    color: #7a6f63 !important;
+}
+
+#deskarea1 #disconnectbutton1 {
+    background: var(--rs-ink) !important;
+    border-color: var(--rs-ink) !important;
+    color: #fff !important;
+}
+
+#deskstatus {
+    color: var(--rs-ink) !important;
+    font-weight: 600;
+}
+
+#deskarea1 .deskareaicon {
+    color: var(--rs-clay-deep);
+}
+
+#deskToolsAreaTop {
+    background-color: var(--rs-ink) !important;
+}
+
+.deskToolsTopTab {
+    background-color: var(--rs-ink-soft) !important;
+    color: #dfe5e8 !important;
+}
+
+#deskToolsRefreshButton {
+    color: var(--rs-sand) !important;
+}
+
+#p11title h1 {
+    padding-left: 11px;
+    border-left: 3px solid var(--rs-clay);
+    line-height: 1.15;
+}
+
+/* --------------------------------------------------------------------------
+   NIGHT MODE — keep the brand rails legible
+   -------------------------------------------------------------------------- */
+
+.night #masthead {
+    background-color: #0b151c !important;
+}
+
+.night #page_leftbar {
+    background: linear-gradient(180deg, #0b151c 0%, #101c24 100%) !important;
+}
+
+.night #footer {
+    background-color: #0b151c !important;
+}

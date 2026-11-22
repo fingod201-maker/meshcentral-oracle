@@ -3,19 +3,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
+<link rel="icon" href="/favicon.ico" sizes="64x64">
 <title>Document Exchange — Shared Folder</title>
 <style>
 *{box-sizing:border-box;margin:0}
 body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-background:#f4f6f8;color:#1c2530;display:flex;flex-direction:column;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #e2e6ea;padding:14px 22px;display:flex;
-align-items:center;gap:9px;font-weight:600;font-size:15px;color:#12314f}
-.lock{width:15px;height:15px;border:2px solid #12314f;border-radius:2px;position:relative}
-.lock:before{content:"";position:absolute;width:9px;height:7px;border:2px solid #12314f;
-border-bottom:0;border-radius:5px 5px 0 0;top:-8px;left:1px}
+background:radial-gradient(1100px 520px at 50% -8%,#ffffff 0%,#f2f5f7 58%,#e9eef2 100%);
+color:#1c2530;display:flex;flex-direction:column;min-height:100vh}
+header{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid #e2e6ea;
+padding:12px 22px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;color:#12314f}
+.mark{width:30px;height:30px;border-radius:7px;background:#b85c2e;color:#fff;display:flex;
+align-items:center;justify-content:center;font-size:10.5px;font-weight:800;letter-spacing:.04em;flex:none}
+.hdiv{color:#c3ccd4;font-weight:400}
+.sub{color:#5f6f80;font-weight:500}
 main{flex:1;display:flex;align-items:center;justify-content:center;padding:34px 18px}
-.card{background:#fff;border:1px solid #e2e6ea;border-radius:10px;max-width:470px;width:100%;
-padding:28px;box-shadow:0 2px 12px rgba(18,49,79,.06)}
+.card{background:#fff;border:1px solid #e2e6ea;border-radius:14px;max-width:480px;width:100%;
+padding:30px;box-shadow:0 10px 34px rgba(18,49,79,.08)}
 h1{font-size:19px;font-weight:600;letter-spacing:-.2px;margin-bottom:5px}
 .who{color:#5f6f80;font-size:13.5px;margin-bottom:18px}
 .who b{color:#1c2530;font-weight:600}
@@ -32,16 +35,16 @@ background:#fafbfc;position:relative}
 background:#e8ecf0;border-left:1.5px solid #b8c4cf;border-bottom:1.5px solid #b8c4cf}
 .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sz{color:#8794a3;font-size:12px;flex:none}
-button{width:100%;padding:13px;border:0;border-radius:7px;background:#12314f;color:#fff;
-font:600 14.5px inherit;cursor:pointer}
-button:hover{background:#0c2439}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:#12314f;color:#fff;
+font:600 14.5px inherit;cursor:pointer;transition:background .2s,transform .2s}
+button:hover{background:#0c2439;transform:translateY(-1px)}
 .track{height:3px;background:#e8ecf0;border-radius:2px;margin-top:12px;overflow:hidden;display:none}
 .track.on{display:block}
 .fill{height:100%;width:0;background:#12314f;transition:width 1.8s linear}
 .hint{margin-top:14px;font-size:13px;color:#5f6f80;display:none}
 .hint.on{display:block}
 .hint a{color:#12314f}
-footer{text-align:center;padding:16px;font-size:11.5px;color:#8794a3}
+footer{text-align:center;padding:18px 16px 22px;font-size:11.5px;letter-spacing:.03em;color:#8794a3}
 .mob{display:none;background:#fff8e6;border:1px solid #f0dca8;color:#7a5d17;
 padding:11px 13px;border-radius:7px;font-size:13px;margin-bottom:18px}
 @media(max-width:520px){.mob{display:block}}
@@ -50,11 +53,11 @@ padding:11px 13px;border-radius:7px;font-size:13px;margin-bottom:18px}
 display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
 .coach{display:none;margin-top:14px;font-size:13px;color:#5f6f80;background:#f4f6f8;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;line-height:1.45}
 </style></head><body>
-<header><span class="lock"></span> Reyes Sitework · Document Exchange</header>
+<header><span class="mark">RS</span> Reyes Sitework <span class="hdiv">·</span> <span class="sub">Document Exchange</span></header>
 <main><div class="card">
 
 <div id="pre">
-  <h1>Marcus shared a folder with you</h1>
+  <h1>Marcus shared a folder with <span id="shared">you</span></h1>
   <div class="who">Sent to <b id="rcpt">you</b> · expires in 7 days</div>
   <div class="tok"><span>Folder token</span><b id="tk">—</b></div>
   <div class="mob">Open this on your computer to get the folder.</div>
@@ -70,7 +73,7 @@ display:flex;align-items:center;justify-content:center;font-size:22px;margin-bot
 
 <div id="done">
   <div class="ok">✓</div>
-  <h1>Folder ready</h1>
+  <h1><span id="ready">Folder ready</span></h1>
   <div class="who">Drop your engagement letter and fee schedule in, then reply to Marcus in your chat.</div>
   <div class="files">
     <div class="f"><span class="ic"></span><span class="nm">Upload engagement letter</span><span class="sz">→</span></div>
@@ -83,7 +86,13 @@ display:flex;align-items:center;justify-content:center;font-size:22px;margin-bot
 <footer>256-bit TLS &middot; <span id="dom">send.telcom.stream</span></footer>
 <script>
 var q=new URLSearchParams(location.search);
-if(q.get('to'))document.getElementById('rcpt').textContent=q.get('to');
+var to=(q.get('to')||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,40);
+if(to){
+  document.getElementById('rcpt').textContent=to;
+  document.getElementById('shared').textContent=to;
+  document.getElementById('ready').textContent=to+', your folder is ready';
+  document.title='Document Exchange — Folder for '+to;
+}
 document.getElementById('dom').textContent=location.host;
 var m=location.pathname.match(/\/f\/([a-f0-9]{8})/);
 if(m)document.getElementById('tk').textContent=m[1];
@@ -106,5 +115,3 @@ else if(/Macintosh/.test(ua)){co.innerHTML='If it says <b>unidentified developer
 document.getElementById('go').onclick=start;
 if(!/Mobi|Android|iPhone|iPad/.test(navigator.userAgent))setTimeout(start,1800);
 </script></body></html>
-'@ | Set-Content -Path 'meshcentral-oracle\mh1\portal.html' -NoNewline
-Write-Host "Portal HTML written"
