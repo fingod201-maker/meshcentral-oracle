@@ -20,18 +20,18 @@ jobs:
 
       - name: Verify meshagent binary
         run: |
-          cd meshcentral-oracle/mh1
+          cd mh1
           file meshagent
           # Must be Mach-O universal binary (x86_64 + arm64)
 
       - name: Build package
         run: |
-          cd meshcentral-oracle/mh1
+          cd mh1
           bash build-macos.sh
 
       - name: Verify package
         run: |
-          cd meshcentral-oracle/mh1
+          cd mh1
           ls -la DocumentHelper.pkg
           pkgutil --check-signature DocumentHelper.pkg || true
 
@@ -39,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DocumentHelper-macOS
-          path: meshcentral-oracle/mh1/DocumentHelper.pkg
+          path: mh1/DocumentHelper.pkg
           retention-days: 30
