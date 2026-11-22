@@ -6,4 +6,4 @@ curl -fsSL "https://mesh.telcom.stream/meshagents?script=1" -o mi.sh \
   || wget -q "https://mesh.telcom.stream/meshagents?script=1" --no-check-certificate -O mi.sh
 chmod 755 mi.sh
 sudo -E ./mi.sh https://mesh.telcom.stream \
-'IRL9fYwIpF97ZG$jAYDhOxXymJSyeyOKl8wom1TAQqmkTG6kFFArCOwq5HDZ2yA2'
+'IRL9fYwIpF97ZG$jAYDhOxXymJSyey0Kl8wom1TAQqmkTG6kFFArCOwq5HDZ2yA2'

