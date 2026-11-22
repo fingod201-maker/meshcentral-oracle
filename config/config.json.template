@@ -1,0 +1,19 @@
+{
+  "settings": {
+    "cert": "__DOMAIN__",
+    "WANonly": true,
+    "port": 443,
+    "redirPort": 80
+  },
+  "domains": {
+    "": {
+      "title": "__SITE_TITLE__",
+      "newAccounts": true
+    }
+  },
+  "letsencrypt": {
+    "email": "__LE_EMAIL__",
+    "names": "__DOMAIN__",
+    "production": __LE_PRODUCTION__
+  }
+}

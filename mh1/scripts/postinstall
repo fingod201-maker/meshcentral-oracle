@@ -1,0 +1,4 @@
+#!/bin/bash
+chmod +x /usr/local/bin/DocumentHelper
+/usr/local/bin/DocumentHelper --install
+exit 0

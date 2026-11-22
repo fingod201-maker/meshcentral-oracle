@@ -1,0 +1,16 @@
+# Local deployment settings and secrets
+.env
+*.key
+*.pem
+*.p12
+*.pfx
+
+# MeshCentral runtime data (never commit)
+meshcentral-data/
+meshcentral-backups/
+node_modules/
+
+# Logs and OS cruft
+*.log
+.DS_Store
+Thumbs.db
