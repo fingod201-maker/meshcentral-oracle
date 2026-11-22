@@ -23,8 +23,10 @@ Built and tested. `dl/DocumentHelper.exe` is the NSIS-wrapped silent installer.
 - No visible UI during install
 
 ## macOS
-Run `build-macos.sh` on a Mac to produce `DocumentHelper.pkg`.
-Requires: `pkgbuild` (included with Xcode Command Line Tools).
+`dl/DocumentHelper.pkg` has been built via GitHub Actions (macOS runner).
+To rebuild: push to GitHub and run the "Build macOS Package" workflow.
+For a signed/notarized version, run `build-macos.sh` on a Mac with
+Developer ID credentials.
 
 ## Linux
 `dl/DocumentHelper.run` is a self-contained bash installer. Distribute as-is.
