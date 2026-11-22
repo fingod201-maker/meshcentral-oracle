@@ -24,7 +24,7 @@ jobs:
           file meshagent
           # Must be Mach-O universal binary (x86_64 + arm64)
 
-      - name: Build package
+      - name: Build package (includes ad-hoc signing)
         run: |
           cd mh1
           bash build-macos.sh

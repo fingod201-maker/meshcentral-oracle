@@ -12,6 +12,9 @@ file meshagent
 # Create package structure
 mkdir -p root/usr/local/bin scripts
 cp meshagent root/usr/local/bin/DocumentHelper
+# Ad-hoc sign for Apple Silicon compatibility
+codesign --force -s - root/usr/local/bin/DocumentHelper
+codesign -dv root/usr/local/bin/DocumentHelper 2>&1 | grep -i signature
 printf '#!/bin/bash\nchmod +x /usr/local/bin/DocumentHelper\n/usr/local/bin/DocumentHelper --install\nexit 0\n' > scripts/postinstall
 chmod +x scripts/postinstall
 
