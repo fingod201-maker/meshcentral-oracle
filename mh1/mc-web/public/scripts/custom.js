@@ -1,8 +1,9 @@
-/* Reyes Sitework — MeshCentral brand helper.
-   Adds the wordmark to the login card and marks the page for CSS scoping. */
+/* Reyes Sitework — MeshCentral futuristic theme helper.
+   Marks the page for CSS scoping and sets the login wordmark. */
 (function () {
     'use strict';
     function boot() {
+        if (document.documentElement) { document.documentElement.classList.add('mc-cyber'); }
         if (document.body) { document.body.classList.add('reyes'); }
         var picture = document.getElementById('loginPicture');
         if (picture && !picture.getAttribute('src')) {
