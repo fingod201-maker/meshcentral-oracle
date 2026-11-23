@@ -21,4 +21,4 @@ echo "=== BAD HASH COUNT (last 200 lines) ==="
 journalctl -u meshcentral -n 200 --no-pager | grep -c 'Agent bad web cert hash' || true
 
 echo "=== CONFIG SNAPSHOT ==="
-grep -E '"(port|aliasPort|redirPort|certUrl|newAccounts)"' /opt/meshcentral/meshcentral-data/config.json || true
+sudo -n grep -E '"(port|aliasPort|redirPort|certUrl|newAccounts)"' /opt/meshcentral/meshcentral-data/config.json || true
