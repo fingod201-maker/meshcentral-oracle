@@ -14,3 +14,8 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Agent build staging and local backups (never commit)
+mh1/build/
+mh1/DocumentHelper.exe.out.exe
+

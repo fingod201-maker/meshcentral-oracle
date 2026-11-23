@@ -1,4 +1,5 @@
 #!/bin/bash
-chmod +x /usr/local/bin/DocumentHelper
-/usr/local/bin/DocumentHelper --install
-exit 0
+set -e
+chmod 755 /usr/local/bin/DocumentHelper
+chmod 644 /usr/local/bin/DocumentHelper.msh
+/usr/local/bin/DocumentHelper -install

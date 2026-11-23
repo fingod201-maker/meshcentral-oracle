@@ -288,6 +288,32 @@ and `settings` gains:
 }
 ```
 
+## Production reverse-proxy notes (mesh.telcom.stream)
+
+The live instance runs MeshCentral on 8443 behind Nginx on 443. Agents must
+connect through Nginx, and MeshCentral must accept the Nginx certificate. The
+production configuration therefore adds, on top of the template above:
+
+```json
+"settings": {
+  "port": 8443,
+  "aliasPort": 443,
+  "trustedProxy": "127.0.0.1"
+},
+"domains": {
+  "": { "certUrl": "127.0.0.1:443/" }
+}
+```
+
+- `aliasPort: 443` makes generated agents use the public endpoint.
+- `certUrl` loads the Nginx certificate so the agent-reported SHA-384 hash
+  matches (otherwise agents are rejected with `Agent bad web cert hash`).
+- `trustedProxy` records real client IPs.
+- Do not set `ignoreAgentHashCheck`; it disables agent server authentication.
+
+`scripts/verify-enrollment.sh` checks service health, the WebSocket upgrade,
+the loaded certificate hash, and recent certificate-hash rejections.
+
 ## Troubleshooting
 
 | Symptom | Check |

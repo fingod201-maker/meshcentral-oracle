@@ -23,6 +23,10 @@ sudo install -m 644 -o meshcentral -g meshcentral "$SRC/login-bg.jpg"    "$DATA/
 sudo cp -a "$DATA/config.json" "$DATA/config.json.bak-$STAMP"
 sudo install -m 600 -o meshcentral -g meshcentral "$SRC/config.json" "$DATA/config.json"
 sudo python3 -m json.tool "$DATA/config.json" > /dev/null && echo "JSON OK"
+
+# Never allow a brand redeploy to drop reverse-proxy enrollment settings.
+sudo node -e "const fs=require('fs');const p='$DATA/config.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.settings=c.settings||{};c.domains=c.domains||{};c.domains['']=c.domains['']||{};if(!c.settings.aliasPort){c.settings.aliasPort=443;}if(!c.settings.trustedProxy){c.settings.trustedProxy='127.0.0.1';}if(!c.domains[''].certUrl){c.domains[''].certUrl='127.0.0.1:443/';}fs.writeFileSync(p,JSON.stringify(c,null,2)+'\n');console.log('proxy enrollment keys preserved');"
+sudo python3 -m json.tool "$DATA/config.json" > /dev/null && echo "JSON OK after guard"
 echo "CONFIG_BACKUP=$DATA/config.json.bak-$STAMP"
 
 sudo chown -R meshcentral:meshcentral "$WEB"

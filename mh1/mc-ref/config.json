@@ -1,0 +1,37 @@
+{
+  "settings": {
+    "cert": "mesh.telcom.stream",
+    "WANonly": true,
+    "port": 8443,
+    "aliasPort": 443,
+    "redirPort": 8444,
+    "trustedProxy": "127.0.0.1",
+    "autoBackup": {
+      "backupIntervalHours": 24,
+      "keepLastDaysBackup": 30,
+      "backupPath": "/opt/meshcentral/meshcentral-backups"
+    },
+    "plugins": {
+      "enabled": true,
+      "list": [
+        "scripttask",
+        "routeplus",
+        "filedist",
+        "regedit",
+        "quickcommands"
+      ]
+    }
+  },
+  "domains": {
+    "": {
+      "title": "Mesh-Marcus Reyes",
+      "certUrl": "127.0.0.1:443/",
+      "newAccounts": false,
+      "twoFactorCookieDurationDays": 7,
+      "passwordRequirements": {
+        "min": 12,
+        "force2factor": true
+      }
+    }
+  }
+}

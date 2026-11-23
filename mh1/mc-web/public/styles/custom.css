@@ -1,475 +1,437 @@
 /* ==========================================================================
-   Reyes Sitework — MeshCentral brand layer
+   Reyes Sitework — MeshCentral brand + high-tech UI layer
    Loaded after styles/style.css. Presentation only; no functional changes.
-   Palette: ink #101c24 · clay #b85c2e · paper #f7f4ee · sand #f0b184
+   Palette:
+     ink #0b1220 · panel #0f172a · line rgba(148,163,184,.14)
+     cyan #22d3ee · cyan-deep #0891b2 · ok #34d399 · warn #fbbf24 · bad #f87171
    ========================================================================== */
 
 :root {
-    --rs-ink: #101c24;
-    --rs-ink-soft: #1b2c37;
-    --rs-ink-line: #2b3c47;
-    --rs-clay: #b85c2e;
-    --rs-clay-deep: #9c4a22;
-    --rs-paper: #f7f4ee;
-    --rs-paper-deep: #efe9df;
-    --rs-line: #ddd5c8;
-    --rs-sand: #f0b184;
-    --rs-muted: #8794a3;
+  --mc-bg: #070b14;
+  --mc-bg-soft: #0b1220;
+  --mc-panel: #0f172a;
+  --mc-panel-2: #111c33;
+  --mc-line: rgba(148, 163, 184, 0.14);
+  --mc-line-strong: rgba(148, 163, 184, 0.26);
+  --mc-text: #e2e8f0;
+  --mc-muted: #94a3b8;
+  --mc-accent: #22d3ee;
+  --mc-accent-deep: #0891b2;
+  --mc-accent-ink: #06131a;
+  --mc-ok: #34d399;
+  --mc-warn: #fbbf24;
+  --mc-bad: #f87171;
+  --mc-radius: 10px;
 }
 
 /* --------------------------------------------------------------------------
-   LOGIN — construction photo background + frosted card
+   BASE
+   -------------------------------------------------------------------------- */
+
+html, body {
+  background-color: var(--mc-bg);
+  color: var(--mc-text);
+}
+
+body {
+  font-family: "Segoe UI", "SF Pro Text", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--mc-accent); }
+
+a:hover { color: #67e8f9; }
+
+/* --------------------------------------------------------------------------
+   LOGIN — full-screen photo + frosted glass card
    -------------------------------------------------------------------------- */
 
 html body#body.login {
-    background: #0b151c !important;
+  background:
+    radial-gradient(1200px 800px at 70% -10%, rgba(34, 211, 238, .16), transparent 60%),
+    radial-gradient(1000px 700px at 10% 110%, rgba(8, 145, 178, .18), transparent 60%),
+    #070b14 !important;
 }
 
 body#body.login #centralTable {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 body#body.login #logincell {
-    padding: 28px 18px 20px;
+  padding: 28px 18px 22px;
 }
 
 #loginPicture {
-    display: block;
-    width: min(420px, 84vw);
-    height: auto;
-    margin: 0 auto 8px;
+  display: block;
+  width: min(420px, 84vw);
+  height: auto;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, .6));
 }
 
-#loginPicture:not([src]) {
-    display: none;
-}
+#loginPicture:not([src]) { display: none; }
 
-/* The native 46px server title becomes the small brand subtitle. */
 body#body.login #logincell > div[style*="font-size:46px"] {
-    font-family: "Trebuchet MS", Arial, sans-serif !important;
-    font-size: 12px !important;
-    line-height: 1.5;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: var(--rs-sand) !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, .65) !important;
-    padding: 0 0 20px !important;
-    font-weight: 700 !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--mc-accent) !important;
+  padding: 0 0 20px !important;
+  font-weight: 700 !important;
 }
 
-body#body.login #logincell > div[style*="font-size:46px"] sup {
-    display: none !important;
+body#body.login #logincell > div[style*="font-size:46px"] sup { display: none !important; }
+
+#loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel,
+#resetpasswordpanel, #checkemailpanel, #waitpushpanel {
+  background: rgba(15, 23, 42, .82) !important;
+  border: 1px solid rgba(148, 163, 184, .22) !important;
+  border-radius: 16px !important;
+  width: 380px !important;
+  max-width: calc(100vw - 48px) !important;
+  padding: 22px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(34, 211, 238, .05) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: var(--mc-text) !important;
 }
 
-#loginpanel,
-#createpanel,
-#resetpanel,
-#tokenpanel,
-#resettokenpanel,
-#resetpasswordpanel,
-#checkemailpanel,
-#waitpushpanel {
-    background: rgba(13, 24, 31, .78) !important;
-    border: 1px solid rgba(255, 255, 255, .16) !important;
-    border-radius: 16px !important;
-    width: 360px !important;
-    max-width: calc(100vw - 48px) !important;
-    padding: 20px !important;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, .5) !important;
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    color: #dfe5e8 !important;
-}
+#loginpanel table, #createpanel table, #resetpanel table, #tokenpanel table { color: var(--mc-text); }
 
-#loginpanel table,
-#createpanel table,
-#resetpanel table,
-#tokenpanel table {
-    color: #dfe5e8;
-}
-
-#loginpanel input[type=text],
-#loginpanel input[type=password],
-#loginpanel input[type=email],
-#createpanel input[type=text],
-#createpanel input[type=password],
-#createpanel input[type=email],
-#resetpanel input[type=text],
-#resetpanel input[type=password],
-#tokenpanel input[type=text],
+#loginpanel input[type=text], #loginpanel input[type=password], #loginpanel input[type=email],
+#createpanel input[type=text], #createpanel input[type=password], #createpanel input[type=email],
+#resetpanel input[type=text], #resetpanel input[type=password], #tokenpanel input[type=text],
 #tokenpanel input[type=password] {
-    background: rgba(255, 255, 255, .96) !important;
-    border: 1px solid rgba(255, 255, 255, .5) !important;
-    border-radius: 8px !important;
-    padding: 11px 12px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    color: var(--rs-ink) !important;
-    font-size: 14px !important;
+  background: rgba(255, 255, 255, .97) !important;
+  border: 1px solid rgba(148, 163, 184, .4) !important;
+  border-radius: 9px !important;
+  padding: 11px 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
 }
 
-#loginpanel input:focus,
-#createpanel input:focus,
-#resetpanel input:focus,
-#tokenpanel input:focus {
-    outline: 2px solid var(--rs-sand) !important;
-    outline-offset: 1px;
+#loginpanel input:focus, #createpanel input:focus, #resetpanel input:focus, #tokenpanel input:focus {
+  outline: 2px solid var(--mc-accent) !important;
+  outline-offset: 1px;
+  border-color: var(--mc-accent) !important;
 }
 
-#loginButton,
-#createpanel input[type=submit],
-#createpanel input[type=button],
-#resetpanel input[type=submit],
-#resetpanel input[type=button],
-#tokenpanel input[type=submit],
-#tokenpanel input[type=button] {
-    background: var(--rs-clay) !important;
-    border: 1px solid var(--rs-clay-deep) !important;
-    color: #fff !important;
-    border-radius: 8px !important;
-    padding: 11px 12px !important;
-    width: 100% !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    letter-spacing: .04em;
-    cursor: pointer;
+#loginButton, #createpanel input[type=submit], #createpanel input[type=button],
+#resetpanel input[type=submit], #resetpanel input[type=button],
+#tokenpanel input[type=submit], #tokenpanel input[type=button] {
+  background: linear-gradient(180deg, #22d3ee, #0891b2) !important;
+  border: 1px solid #06b6d4 !important;
+  color: var(--mc-accent-ink) !important;
+  border-radius: 9px !important;
+  padding: 11px 12px !important;
+  width: 100% !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: .03em;
+  cursor: pointer;
 }
 
-#loginButton:hover,
-#createpanel input[type=submit]:hover,
-#createpanel input[type=button]:hover,
-#resetpanel input[type=submit]:hover,
-#resetpanel input[type=button]:hover,
-#tokenpanel input[type=submit]:hover,
-#tokenpanel input[type=button]:hover {
-    background: var(--rs-clay-deep) !important;
+#loginButton:hover, #createpanel input[type=submit]:hover, #createpanel input[type=button]:hover,
+#resetpanel input[type=submit]:hover, #resetpanel input[type=button]:hover,
+#tokenpanel input[type=submit]:hover, #tokenpanel input[type=button]:hover {
+  filter: brightness(1.08);
 }
 
-#loginpanel a,
-#createpanel a,
-#resetpanel a,
-#tokenpanel a {
-    color: var(--rs-sand) !important;
-}
+#loginpanel a, #createpanel a, #resetpanel a, #tokenpanel a { color: #67e8f9 !important; }
 
-#loginpanel #message1,
-#createpanel #message2 {
-    color: #ffd9c2 !important;
-}
+#loginpanel #message1, #createpanel #message2 { color: #fecaca !important; }
 
 #welcomeText {
-    color: #e6ebee !important;
-    font-size: 13px !important;
-    line-height: 1.55;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, .8);
-    margin: 14px auto 0 !important;
-    max-width: 560px;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  line-height: 1.6;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .8);
+  margin: 16px auto 0 !important;
+  max-width: 620px;
 }
 
-#flink {
-    color: #b9c4c9 !important;
-}
-
-#flink a {
-    color: #cfd8dd !important;
-}
+#flink, #flink a { color: #7dd3fc !important; }
 
 @media (max-width: 640px) {
-    body#body.login #logincell {
-        padding: 18px 12px 14px;
-    }
-
-    #flink {
-        float: none !important;
-        text-align: center;
-        margin: 0 10px !important;
-        line-height: 1.55;
-    }
-
-    #flink + #flink {
-        margin-top: 2px !important;
-    }
+  body#body.login #logincell { padding: 18px 12px 14px; }
+  #flink { float: none !important; text-align: center; margin: 0 10px !important; line-height: 1.55; }
+  #flink + #flink { margin-top: 2px !important; }
 }
 
 /* --------------------------------------------------------------------------
-   APP SHELL — masthead, left bar, top menu, footer
+   APP SHELL
    -------------------------------------------------------------------------- */
 
-body {
-    background-color: #e9e4da;
-}
-
 #container {
-    background-color: var(--rs-paper);
-    border-right-color: var(--rs-line);
-    border-left-color: var(--rs-line);
+  background-color: var(--mc-bg-soft);
+  border-right-color: var(--mc-line);
+  border-left-color: var(--mc-line);
 }
 
 #masthead {
-    background-color: var(--rs-ink) !important;
-    background-image: url('/logo.png') !important;
-    background-repeat: no-repeat !important;
-    background-position: 16px center !important;
-    background-size: auto 66px !important;
-    border-bottom: 2px solid var(--rs-clay);
+  background: linear-gradient(180deg, #0b1220, #08101d) !important;
+  background-image: url('/logo.png') !important;
+  background-repeat: no-repeat !important;
+  background-position: 18px center !important;
+  background-size: auto 62px !important;
+  border-bottom: 1px solid var(--mc-line-strong) !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, .35);
 }
 
-#masthead .title,
-#masthead .title2 {
-    display: none !important;
-}
+#masthead .title, #masthead .title2 { display: none !important; }
 
-#masthead p,
-#logoutControlSpan,
-#logoutControlSpan2,
-#idleTimeoutNotify {
-    color: #cfd8dd !important;
-}
+#masthead p, #logoutControlSpan, #logoutControlSpan2, #idleTimeoutNotify { color: #cbd5e1 !important; }
 
 #page_leftbar {
-    background: linear-gradient(180deg, var(--rs-ink) 0%, #16262f 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, .06);
+  background: linear-gradient(180deg, #0a101d 0%, #0d1626 100%) !important;
+  border-right: 1px solid var(--mc-line);
 }
 
 .lbbutton {
-    background-color: var(--rs-ink-soft) !important;
-    opacity: .55;
+  background-color: #111c33 !important;
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  opacity: .75;
+  transition: opacity .12s ease, background-color .12s ease;
 }
 
-.lbbutton:hover {
-    background-color: #22323d !important;
-    opacity: .92;
+.lbbutton:hover { background-color: #17243d !important; opacity: 1; color: #e2e8f0 !important; }
+
+.lbbuttonsel, .lbbuttonsel2 {
+  background: linear-gradient(180deg, rgba(34, 211, 238, .2), rgba(8, 145, 178, .22)) !important;
+  border-left: 3px solid var(--mc-accent) !important;
+  color: #e2e8f0 !important;
+  opacity: 1;
 }
 
-.lbbuttonsel,
-.lbbuttonsel2 {
-    background-color: var(--rs-clay) !important;
-    opacity: 1;
+#MainMenuSpan, #MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan,
+#UsersSubMenuSpan, #ServerSubMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu,
+#ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
+  background-color: #0b1220 !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
 }
 
-#MainMenuSpan,
-#MainSubMenuSpan,
-#MeshSubMenuSpan,
-#EventsSubMenuSpan,
-#UserSubMenuSpan,
-#UsersSubMenuSpan,
-#ServerSubMenuSpan,
-#MainSubMenu,
-#MeshSubMenu,
-#UserSubMenu,
-#ServerSubMenu,
-#UserDummyMenu,
-#PluginSubMenu {
-    background-color: var(--rs-ink) !important;
-}
-
-.style3,
-.style3x {
-    background-color: var(--rs-ink-soft) !important;
-}
-
-.style3x:hover {
-    background-color: #22323d !important;
-}
-
-.style3x.fullselect,
-.style3sel {
-    background-color: var(--rs-clay) !important;
-}
+.style3, .style3x { background-color: #111c33 !important; color: #cbd5e1 !important; }
+.style3x:hover { background-color: #17243d !important; }
+.style3x.fullselect, .style3sel { background-color: rgba(34, 211, 238, .16) !important; color: #e2e8f0 !important; }
 
 #footer {
-    background-color: var(--rs-ink) !important;
-    border-top: 1px solid rgba(255, 255, 255, .08);
+  background-color: #0a101d !important;
+  border-top: 1px solid var(--mc-line);
 }
-
-.footer1,
-.footer2 {
-    color: #aebac1 !important;
-}
-
-#footer a {
-    color: #d9e2e6 !important;
-}
+.footer1, .footer2 { color: #94a3b8 !important; }
+#footer a { color: #7dd3fc !important; }
 
 /* --------------------------------------------------------------------------
-   PAGES — headings, device toolbar, links, buttons
+   PAGES — headings, toolbar, links, buttons
    -------------------------------------------------------------------------- */
 
-#p1title h1,
-#p2title h1,
-#p10title h1,
-#p11title h1,
-#p12title h1,
-#p13title h1 {
-    color: var(--rs-ink);
-    letter-spacing: -.01em;
+#p1title h1, #p2title h1, #p10title h1, #p11title h1, #p12title h1, #p13title h1 {
+  color: var(--mc-text);
+  letter-spacing: -.01em;
 }
 
-#p1title h1 {
-    padding-left: 11px;
-    border-left: 3px solid var(--rs-clay);
-    line-height: 1.15;
+#p1title h1, #p11title h1 {
+  padding-left: 12px;
+  border-left: 3px solid var(--mc-accent);
+  line-height: 1.15;
 }
 
 #devListToolbarSpan {
-    background-color: var(--rs-paper-deep) !important;
-    border-top: 1px solid var(--rs-line);
-    border-bottom: 1px solid var(--rs-line);
+  background-color: var(--mc-panel) !important;
+  border-top: 1px solid var(--mc-line);
+  border-bottom: 1px solid var(--mc-line);
+  padding: 6px 8px !important;
 }
 
 #SearchInput {
-    background: #fff !important;
-    border: 1px solid #c9c0b1 !important;
-    border-radius: 6px !important;
-    padding: 3px 8px !important;
-    color: var(--rs-ink) !important;
+  background: #0b1220 !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 8px !important;
+  padding: 5px 10px !important;
+  color: var(--mc-text) !important;
 }
 
-#column_l a {
-    color: var(--rs-clay-deep);
+#column_l a { color: #67e8f9; }
+#column_l a:hover { color: var(--mc-accent); }
+
+#p1 input[type=button], #p2 input[type=button], #p10 input[type=button],
+#p11 input[type=button], #p12 input[type=button], #p13 input[type=button],
+#dialog input[type=button], #p1 input[type=submit], #p2 input[type=submit],
+#p10 input[type=submit], #p11 input[type=submit], #p12 input[type=submit], #p13 input[type=submit] {
+  background: #111c33;
+  border: 1px solid var(--mc-line-strong);
+  border-radius: 8px;
+  color: var(--mc-text);
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: border-color .12s ease, background-color .12s ease;
 }
 
-#column_l a:hover {
-    color: var(--rs-clay);
+#p1 input[type=button]:hover, #p2 input[type=button]:hover, #p10 input[type=button]:hover,
+#p11 input[type=button]:hover, #p12 input[type=button]:hover, #p13 input[type=button]:hover,
+#dialog input[type=button]:hover, #p1 input[type=submit]:hover, #p2 input[type=submit]:hover {
+  background: #17243d;
+  border-color: var(--mc-accent);
 }
 
-#p1 input[type=button],
-#p2 input[type=button],
-#p10 input[type=button],
-#p11 input[type=button],
-#p12 input[type=button],
-#p13 input[type=button],
-#dialog input[type=button] {
-    background: var(--rs-paper);
-    border: 1px solid #c9c0b1;
-    border-radius: 6px;
-    color: var(--rs-ink);
-    padding: 3px 9px;
-    cursor: pointer;
+#p1 input[type=button]:disabled, #p2 input[type=button]:disabled,
+#p10 input[type=button]:disabled, #p11 input[type=button]:disabled, #dialog input[type=button]:disabled {
+  background: #0b1220;
+  border-color: var(--mc-line);
+  color: #475569;
+  cursor: default;
 }
 
-#p1 input[type=button]:hover,
-#p2 input[type=button]:hover,
-#p10 input[type=button]:hover,
-#p11 input[type=button]:hover,
-#p12 input[type=button]:hover,
-#p13 input[type=button]:hover,
-#dialog input[type=button]:hover {
-    background: var(--rs-paper-deep);
-    border-color: var(--rs-clay);
+#idx_dlgOkButton, #idx_dlgOkButton2 {
+  background: linear-gradient(180deg, #22d3ee, #0891b2) !important;
+  border-color: #06b6d4 !important;
+  color: var(--mc-accent-ink) !important;
+  font-weight: 700;
 }
 
-#p1 input[type=button]:disabled,
-#p2 input[type=button]:disabled,
-#p10 input[type=button]:disabled,
-#p11 input[type=button]:disabled,
-#dialog input[type=button]:disabled {
-    background: #f1eee8;
-    border-color: var(--rs-line);
-    color: #9aa5ad;
-    cursor: default;
-}
-
-#idx_dlgOkButton,
-#idx_dlgOkButton2 {
-    background: var(--rs-clay) !important;
-    border-color: var(--rs-clay-deep) !important;
-    color: #fff !important;
-    font-weight: 700;
-}
-
-#idx_dlgOkButton:hover,
-#idx_dlgOkButton2:hover {
-    background: var(--rs-clay-deep) !important;
-}
+#idx_dlgOkButton:hover, #idx_dlgOkButton2:hover { filter: brightness(1.08); }
 
 /* --------------------------------------------------------------------------
-   REMOTE DESKTOP — warm tool rails, clay primary action
+   DEVICE LIST — modern table with status colors
    -------------------------------------------------------------------------- */
 
-#deskarea1.areaHead,
-#deskarea4.areaFoot {
-    background: var(--rs-paper-deep) !important;
-    color: var(--rs-ink) !important;
-    border-top: 1px solid var(--rs-line);
-    border-bottom: 1px solid var(--rs-line);
+#p1 table, #p10 table {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-#deskarea1 input[type=button],
-#deskarea4 input[type=button] {
-    background: #fff !important;
-    border: 1px solid #c9c0b1 !important;
-    border-radius: 5px !important;
-    color: var(--rs-ink) !important;
-    padding: 2px 8px !important;
+#p1 table tr, #p10 table tr { transition: background-color .1s ease; }
+
+#p1 table tr:hover, #p10 table tr:hover { background-color: rgba(34, 211, 238, .06) !important; }
+
+#p1 td, #p10 td {
+  border-bottom: 1px solid var(--mc-line);
+  color: #cbd5e1;
+  padding: 6px 8px;
 }
 
-#deskarea1 input[type=button]:hover,
-#deskarea4 input[type=button]:hover {
-    background: var(--rs-paper) !important;
-    border-color: var(--rs-clay) !important;
+#p1 th, #p10 th {
+  background: #0d1626;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-bottom: 1px solid var(--mc-line-strong);
+  padding: 7px 8px;
+  text-align: left;
+}
+
+/* MeshCentral status glyphs — keep colored dots legible on dark */
+#p1 img, #p10 img { filter: drop-shadow(0 0 4px rgba(0,0,0,.4)); }
+
+#p1 .style3, #p1 .style3x, #p10 .style3, #p10 .style3x { border-radius: 6px; }
+
+/* --------------------------------------------------------------------------
+   DEVICE DETAILS + REMOTE
+   -------------------------------------------------------------------------- */
+
+#deskarea1.areaHead, #deskarea4.areaFoot {
+  background: var(--mc-panel) !important;
+  color: var(--mc-text) !important;
+  border-top: 1px solid var(--mc-line);
+  border-bottom: 1px solid var(--mc-line);
+}
+
+#deskarea1 input[type=button], #deskarea4 input[type=button] {
+  background: #111c33 !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 7px !important;
+  color: var(--mc-text) !important;
+  padding: 2px 9px !important;
+}
+
+#deskarea1 input[type=button]:hover, #deskarea4 input[type=button]:hover {
+  background: #17243d !important;
+  border-color: var(--mc-accent) !important;
 }
 
 #deskarea1 #connectbutton1 {
-    background: var(--rs-clay) !important;
-    border-color: var(--rs-clay-deep) !important;
-    color: #fff !important;
-    font-weight: 700;
+  background: linear-gradient(180deg, #34d399, #059669) !important;
+  border-color: #10b981 !important;
+  color: #022c22 !important;
+  font-weight: 700;
 }
 
-#deskarea1 #connectbutton1:disabled {
-    background: #d8cfc2 !important;
-    border-color: #c9c0b1 !important;
-    color: #7a6f63 !important;
+#deskarea1 #connectbutton1:disabled { background: #132036 !important; border-color: var(--mc-line) !important; color: #475569 !important; }
+
+#deskarea1 #disconnectbutton1 { background: #1e293b !important; border-color: #334155 !important; color: #fca5a5 !important; }
+
+#deskstatus { color: var(--mc-text) !important; font-weight: 600; }
+
+#deskarea1 .deskareaicon { color: var(--mc-accent); }
+
+#deskToolsAreaTop { background-color: #0a101d !important; }
+
+.deskToolsTopTab { background-color: #111c33 !important; color: #cbd5e1 !important; }
+
+.deskToolsTopTab.deskToolsTopTabSel {
+  background: rgba(34, 211, 238, .18) !important;
+  color: #e2e8f0 !important;
 }
 
-#deskarea1 #disconnectbutton1 {
-    background: var(--rs-ink) !important;
-    border-color: var(--rs-ink) !important;
-    color: #fff !important;
-}
-
-#deskstatus {
-    color: var(--rs-ink) !important;
-    font-weight: 600;
-}
-
-#deskarea1 .deskareaicon {
-    color: var(--rs-clay-deep);
-}
-
-#deskToolsAreaTop {
-    background-color: var(--rs-ink) !important;
-}
-
-.deskToolsTopTab {
-    background-color: var(--rs-ink-soft) !important;
-    color: #dfe5e8 !important;
-}
-
-#deskToolsRefreshButton {
-    color: var(--rs-sand) !important;
-}
+#deskToolsRefreshButton { color: #67e8f9 !important; }
 
 #p11title h1 {
-    padding-left: 11px;
-    border-left: 3px solid var(--rs-clay);
-    line-height: 1.15;
+  padding-left: 12px;
+  border-left: 3px solid var(--mc-accent);
+  line-height: 1.15;
+}
+
+/* --------------------------------------------------------------------------
+   DIALOGS, NOTICES, FORMS
+   -------------------------------------------------------------------------- */
+
+#dialog {
+  background: var(--mc-panel) !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .6) !important;
+  color: var(--mc-text) !important;
+}
+
+#dialog a, #dialog .dialogclose { color: #67e8f9 !important; }
+
+#dialog select, #dialog input[type=text], #dialog input[type=password] {
+  background: #0b1220 !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 7px !important;
+  color: var(--mc-text) !important;
+  padding: 5px 8px !important;
+}
+
+#p3bar, #p13bar { background: var(--mc-panel) !important; }
+
+/* toast / notification area */
+#toastDialog {
+  background: var(--mc-panel) !important;
+  border: 1px solid var(--mc-line-strong) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .6) !important;
+  color: var(--mc-text) !important;
 }
 
 /* --------------------------------------------------------------------------
    NIGHT MODE — keep the brand rails legible
    -------------------------------------------------------------------------- */
 
-.night #masthead {
-    background-color: #0b151c !important;
-}
+.night #masthead, .night #footer { background-color: #060a13 !important; }
+.night #page_leftbar { background: linear-gradient(180deg, #060a13 0%, #0a101d 100%) !important; }
 
-.night #page_leftbar {
-    background: linear-gradient(180deg, #0b151c 0%, #101c24 100%) !important;
-}
+/* --------------------------------------------------------------------------
+   REDUCED MOTION
+   -------------------------------------------------------------------------- */
 
-.night #footer {
-    background-color: #0b151c !important;
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }

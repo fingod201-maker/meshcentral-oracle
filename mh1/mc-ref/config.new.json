@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "cert": "mesh.telcom.stream",
+    "WANonly": true,
+    "port": 8443,
+    "aliasPort": 443,
+    "redirPort": 8444,
+    "trustedProxy": "127.0.0.1",
+    "autoBackup": {
+      "backupIntervalHours": 24,
+      "keepLastDaysBackup": 30,
+      "backupPath": "/opt/meshcentral/meshcentral-backups"
+    },
+    "plugins": {
+      "enabled": true,
+      "list": [
+        "scripttask",
+        "routeplus",
+        "filedist",
+        "regedit",
+        "quickcommands"
+      ]
+    }
+  },
+  "domains": {
+    "": {
+      "title": "Mesh-Marcus Reyes",
+      "title2": "Reyes Sitework",
+      "titlepicture": "reyes-title.png",
+      "welcomepicture": "login-bg.jpg",
+      "welcomepicturefullscreen": true,
+      "welcometext": "Reyes Sitework LLC &middot; Secure device access for authorized users.",
+      "loginfooter": "256-bit TLS &middot; mesh.telcom.stream",
+      "footer": "Reyes Sitework LLC &middot; 256-bit TLS &middot; mesh.telcom.stream",
+      "certUrl": "127.0.0.1:443/",
+      "newAccounts": false,
+      "twoFactorCookieDurationDays": 7,
+      "passwordRequirements": {
+        "min": 12,
+        "force2factor": true
+      }
+    }
+  }
+}
