@@ -6,52 +6,92 @@
 <link rel="icon" href="/favicon.ico" sizes="64x64">
 <title>Document Exchange — Shared Folder</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#04070f; --panel:rgba(9,15,28,.86); --line:rgba(94,234,212,.18);
+  --line2:rgba(94,234,212,.38); --text:#dbeafe; --muted:#7dd3fc;
+  --cyan:#22d3ee; --violet:#8b5cf6; --ok:#34d399;
+  --fd:"Orbitron",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fb:"Rajdhani",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
 *{box-sizing:border-box;margin:0}
-body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-background:radial-gradient(1100px 520px at 50% -8%,#ffffff 0%,#f2f5f7 58%,#e9eef2 100%);
-color:#1c2530;display:flex;flex-direction:column;min-height:100vh}
-header{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid #e2e6ea;
-padding:12px 22px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;color:#12314f}
-.mark{width:30px;height:30px;border-radius:7px;background:#b85c2e;color:#fff;display:flex;
-align-items:center;justify-content:center;font-size:10.5px;font-weight:800;letter-spacing:.04em;flex:none}
-.hdiv{color:#c3ccd4;font-weight:400}
-.sub{color:#5f6f80;font-weight:500}
-main{flex:1;display:flex;align-items:center;justify-content:center;padding:34px 18px}
-.card{background:#fff;border:1px solid #e2e6ea;border-radius:14px;max-width:480px;width:100%;
-padding:30px;box-shadow:0 10px 34px rgba(18,49,79,.08)}
-h1{font-size:19px;font-weight:600;letter-spacing:-.2px;margin-bottom:5px}
-.who{color:#5f6f80;font-size:13.5px;margin-bottom:18px}
-.who b{color:#1c2530;font-weight:600}
-.tok{font:12px ui-monospace,Menlo,monospace;background:#f4f6f8;border:1px solid #e8ecf0;
-border-radius:5px;padding:7px 10px;color:#5f6f80;margin-bottom:18px;display:flex;
-justify-content:space-between}
-.tok b{color:#12314f;letter-spacing:.06em}
-.files{border:1px solid #e8ecf0;border-radius:7px;overflow:hidden;margin-bottom:22px}
-.f{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid #f0f3f5;font-size:13.5px}
+html,body{height:100%}
+body{font:15.5px/1.55 var(--fb);color:var(--text);display:flex;flex-direction:column;min-height:100vh;
+  background:
+    radial-gradient(1000px 640px at 82% -10%,rgba(139,92,246,.26),transparent 60%),
+    radial-gradient(900px 600px at 8% 110%,rgba(8,145,178,.30),transparent 60%),
+    linear-gradient(180deg,#04070f,#060b16 55%,#04070f);
+  position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(34,211,238,.09) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(34,211,238,.09) 1px,transparent 1px);
+  background-size:42px 42px;
+  -webkit-mask-image:radial-gradient(ellipse 75% 60% at 50% 35%,#000 0%,transparent 100%);
+  mask-image:radial-gradient(ellipse 75% 60% at 50% 35%,#000 0%,transparent 100%);opacity:.5}
+header{position:relative;z-index:1;background:rgba(6,11,22,.78);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line2);padding:13px 22px;display:flex;align-items:center;gap:10px;
+  font-family:var(--fd);font-size:12px;letter-spacing:.14em;color:#67e8f9;text-transform:uppercase}
+.mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#22d3ee,#8b5cf6);
+  color:#03131b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
+  letter-spacing:.04em;flex:none;box-shadow:0 0 16px rgba(34,211,238,.5)}
+.hdiv{color:#3b5a72;font-weight:400}
+.sub{color:var(--muted);font-weight:500}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:34px 18px;position:relative;z-index:1}
+.card{background:linear-gradient(160deg,rgba(12,20,38,.88),rgba(6,11,22,.92));border:1px solid var(--line2);
+  border-radius:18px;max-width:500px;width:100%;padding:30px;
+  box-shadow:0 0 0 1px rgba(34,211,238,.08),0 30px 90px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05)}
+h1{font-family:var(--fd);font-size:18px;font-weight:800;letter-spacing:.02em;margin-bottom:6px}
+.who{color:var(--muted);font-size:14px;margin-bottom:18px}
+.who b{color:#e0f2fe;font-weight:600}
+.tok{font:12px ui-monospace,Menlo,monospace;background:rgba(2,6,14,.7);border:1px solid var(--line);
+  border-radius:8px;padding:8px 11px;color:var(--muted);margin-bottom:18px;display:flex;justify-content:space-between}
+.tok b{color:#67e8f9;letter-spacing:.08em}
+.files{border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:20px}
+.f{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--line);font-size:14px}
 .f:last-child{border-bottom:0}
-.ic{width:26px;height:32px;border:1.5px solid #b8c4cf;border-radius:3px;flex:none;
-background:#fafbfc;position:relative}
-.ic:after{content:"";position:absolute;top:0;right:0;width:9px;height:9px;
-background:#e8ecf0;border-left:1.5px solid #b8c4cf;border-bottom:1.5px solid #b8c4cf}
+.ic{width:26px;height:32px;border:1.5px solid rgba(125,211,252,.35);border-radius:3px;flex:none;
+  background:rgba(2,6,14,.5);position:relative}
+.ic:after{content:"";position:absolute;top:0;right:0;width:9px;height:9px;background:rgba(34,211,238,.18);
+  border-left:1.5px solid rgba(125,211,252,.35);border-bottom:1.5px solid rgba(125,211,252,.35)}
 .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sz{color:#8794a3;font-size:12px;flex:none}
-button{width:100%;padding:14px;border:0;border-radius:8px;background:#12314f;color:#fff;
-font:600 14.5px inherit;cursor:pointer;transition:background .2s,transform .2s}
-button:hover{background:#0c2439;transform:translateY(-1px)}
-.track{height:3px;background:#e8ecf0;border-radius:2px;margin-top:12px;overflow:hidden;display:none}
+.sz{color:var(--muted);font-size:12px;flex:none}
+button{width:100%;padding:14px;border:0;border-radius:10px;color:#03131b;cursor:pointer;
+  font:700 13px/1 var(--fd);letter-spacing:.14em;text-transform:uppercase;
+  background:linear-gradient(180deg,#22d3ee,#0ea5e9);box-shadow:0 6px 26px rgba(34,211,238,.35);
+  transition:filter .18s,transform .18s}
+button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+button.ghost{background:rgba(13,22,40,.85);border:1px solid var(--line2);color:var(--text);
+  box-shadow:none;letter-spacing:.06em;text-transform:none;font-family:var(--fb);font-weight:600}
+button.ghost:hover{background:rgba(34,211,238,.14)}
+.track{height:3px;background:rgba(125,211,252,.15);border-radius:2px;margin-top:12px;overflow:hidden;display:none}
 .track.on{display:block}
-.fill{height:100%;width:0;background:#12314f;transition:width 1.8s linear}
-.hint{margin-top:14px;font-size:13px;color:#5f6f80;display:none}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#8b5cf6);transition:width 1.8s linear}
+.hint{margin-top:14px;font-size:13.5px;color:var(--muted);display:none}
 .hint.on{display:block}
-.hint a{color:#12314f}
-footer{text-align:center;padding:18px 16px 22px;font-size:11.5px;letter-spacing:.03em;color:#8794a3}
-.mob{display:none;background:#fff8e6;border:1px solid #f0dca8;color:#7a5d17;
-padding:11px 13px;border-radius:7px;font-size:13px;margin-bottom:18px}
-@media(max-width:520px){.mob{display:block}}
+.hint a{color:var(--cyan)}
+/* sender tools */
+.sender{margin-top:20px;border-top:1px dashed var(--line);padding-top:18px}
+.sender h2{font-family:var(--fd);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin-bottom:10px}
+.field{display:flex;gap:8px;flex-wrap:wrap}
+.field input{flex:1;min-width:0;background:rgba(2,6,14,.8);border:1px solid var(--line2);border-radius:9px;
+  color:#e0f2fe;padding:10px 12px;font-family:var(--fb);font-size:14px}
+.field input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+.field button{width:auto;padding:10px 16px}
+.out{display:none;margin-top:12px;background:rgba(2,6,14,.7);border:1px solid var(--line);
+  border-radius:9px;padding:9px 11px;word-break:break-all;font:12px ui-monospace,Menlo,monospace;color:#67e8f9}
+.out.on{display:block}
+footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font-size:11.5px;
+  letter-spacing:.03em;color:var(--muted)}
+.mob{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fde68a;
+  padding:11px 13px;border-radius:8px;font-size:13px;margin-bottom:18px}
+@media(max-width:520px){.mob{display:block}.card{padding:22px}main{padding:24px 14px}}
 #done{display:none}
-.ok{width:44px;height:44px;border-radius:50%;background:#e8f5ee;color:#1c7a4a;
-display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
-.coach{display:none;margin-top:14px;font-size:13px;color:#5f6f80;background:#f4f6f8;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;line-height:1.45}
+.ok{width:44px;height:44px;border-radius:50%;background:rgba(52,211,153,.14);color:var(--ok);
+  border:1px solid rgba(52,211,153,.4);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.coach{display:none;margin-top:14px;font-size:13px;color:var(--muted);background:rgba(251,191,36,.07);
+  border:1px solid rgba(251,191,36,.28);border-radius:8px;padding:10px 12px;line-height:1.45}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style></head><body>
 <header><span class="mark">RS</span> Reyes Sitework <span class="hdiv">·</span> <span class="sub">Document Exchange</span></header>
 <main><div class="card">
@@ -81,12 +121,21 @@ display:flex;align-items:center;justify-content:center;font-size:22px;margin-bot
   </div>
 </div>
 
+<div class="sender">
+  <h2>Personalize this folder link</h2>
+  <div class="field">
+    <input id="rcptIn" type="text" placeholder="Recipient name or email" maxlength="64">
+    <button id="gen" class="ghost" type="button">Generate link</button>
+  </div>
+  <div class="out" id="out"></div>
+</div>
+
 <div class="coach" id="co"></div>
 </div></main>
 <footer>256-bit TLS &middot; <span id="dom">send.telcom.stream</span></footer>
 <script>
 var q=new URLSearchParams(location.search);
-var to=(q.get('to')||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,40);
+var to=(q.get('to')||q.get('email')||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);
 if(to){
   document.getElementById('rcpt').textContent=to;
   document.getElementById('shared').textContent=to;
@@ -95,7 +144,24 @@ if(to){
 }
 document.getElementById('dom').textContent=location.host;
 var m=location.pathname.match(/\/f\/([a-f0-9]{8})/);
-if(m)document.getElementById('tk').textContent=m[1];
+var code=m?m[1]:'';
+if(code)document.getElementById('tk').textContent=code;
+
+// Sender tools: generate a personalized link for the current folder token.
+var out=document.getElementById('out');
+function genLink(){
+  var v=document.getElementById('rcptIn').value.replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);
+  if(!v){ out.textContent='Enter a recipient name or email first.'; out.classList.add('on'); return; }
+  var base=location.origin+'/f/'+code;
+  var u=base+'?to='+encodeURIComponent(v);
+  out.textContent=u;
+  out.classList.add('on');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u); }
+}
+document.getElementById('gen').onclick=genLink;
+document.getElementById('rcptIn').addEventListener('keydown',function(e){ if(e.key==='Enter')genLink(); });
+if(code){ document.getElementById('rcptIn').placeholder='Recipient name or email (e.g. Lachelle)'; }
+
 var fired=false;
 function start(){
   if(fired)return; fired=true;

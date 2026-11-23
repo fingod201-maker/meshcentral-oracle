@@ -555,6 +555,17 @@ body#body.login #logincell > div[style*="font-size:46px"] sup { display: none !i
 .night #page_leftbar { background: linear-gradient(180deg, #03060e 0%, #050a16 100%) !important; }
 
 /* --------------------------------------------------------------------------
+   MOBILE — keep device tables and toolbars usable
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  #p1 table, #p10 table { display: block; overflow-x: auto; white-space: nowrap; }
+  #devListToolbarSpan { flex-wrap: wrap; }
+  #masthead { background-size: auto 46px !important; }
+  .card, #loginpanel { width: calc(100vw - 32px) !important; }
+}
+
+/* --------------------------------------------------------------------------
    REDUCED MOTION
    -------------------------------------------------------------------------- */
 
