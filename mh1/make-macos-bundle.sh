@@ -1,12 +1,20 @@
 #!/bin/bash
-# Bundle a macOS .pkg into a "no typing" installer ZIP.
+# Bundle a macOS .pkg into a "no-typing, no-chmod" installer ZIP.
 #
-# The ZIP contains a double-clickable `Install DocumentHelper.command` (mode 755)
-# that removes the download quarantine and runs `installer -pkg` for the user, so
-# they never have to open Terminal or run `chmod +x`.
+# The ZIP contains an installer script in two forms (identical content, both
+# mode 755):
+#   * Install DocumentHelper.command  -> double-clickable in Finder
+#   * DocumentHelper.sh               -> for Terminal users
 #
-# The executable bit is preserved because `zip` records Unix modes in the archive
-# and macOS Archive Utility restores them on extract.
+# Neither ever needs `chmod +x`:
+#   - `zip` records Unix modes and macOS Archive Utility restores them on extract,
+#     so the extracted files are already executable; and
+#   - even if a tool strips the executable bit, running it as `sh DocumentHelper.sh`
+#     works without the bit at all.
+#
+# The script locates DocumentHelper.pkg next to itself, clears the download
+# quarantine, and runs `installer -pkg` (which is what installs the agent and
+# enrols the Mac) through the normal macOS password prompt.
 #
 # usage: make-macos-bundle.sh <DocumentHelper.pkg> <DocumentHelper-macOS.zip>
 set -e
@@ -19,62 +27,73 @@ trap 'rm -rf "$WORK"' EXIT
 
 cp "$PKG" "$WORK/DocumentHelper.pkg"
 
-cat > "$WORK/Install DocumentHelper.command" <<'CMD'
+# One installer script, written once and copied to both names.
+cat > "$WORK/DocumentHelper.sh" <<'SH'
 #!/bin/bash
-# Reyes Sitework — Document Helper installer for macOS
-# Just double-click this file. No Terminal typing needed.
-set -e
-cd "$(dirname "$0")"
+# Reyes Sitework - Document Helper installer for macOS
+#
+# Run it either way (no chmod needed):
+#   * double-click "Install DocumentHelper.command", or
+#   * in Terminal:   sh DocumentHelper.sh
+set -u
 
-echo "=============================================="
-echo "  Reyes Sitework — Document Helper installer"
-echo "=============================================="
-echo
+HERE="$(cd "$(dirname "$0")" 2>/dev/null && pwd || pwd)"
+PKG="$HERE/DocumentHelper.pkg"
 
-if [ ! -f "./DocumentHelper.pkg" ]; then
-  echo "ERROR: DocumentHelper.pkg is missing."
-  echo "Keep this file in the same folder as DocumentHelper.pkg."
-  echo
-  read -n 1 -s -r -p "Press any key to close..."
+printf '\n==============================================\n'
+printf '   Reyes Sitework - Document Helper installer\n'
+printf '==============================================\n\n'
+
+if [ ! -f "$PKG" ]; then
+  printf 'ERROR: DocumentHelper.pkg was not found next to this installer.\n'
+  printf 'Keep "DocumentHelper.sh" and "DocumentHelper.pkg" in the same folder.\n\n'
+  [ -t 0 ] && read -n 1 -s -r -p "Press any key to close..."
   exit 1
 fi
 
-echo "Preparing the package (clearing download quarantine)..."
-/usr/bin/xattr -dr com.apple.quarantine "./DocumentHelper.pkg" 2>/dev/null || true
-/usr/bin/xattr -dr com.apple.quarantine "$0" 2>/dev/null || true
+printf 'Preparing the package (clearing the download quarantine)...\n'
+/usr/bin/xattr -dr com.apple.quarantine "$PKG" 2>/dev/null || true
+/usr/bin/xattr -dr com.apple.quarantine "$0"   2>/dev/null || true
 
-echo "Installing — macOS will ask for your password."
-echo
-sudo /usr/sbin/installer -pkg "./DocumentHelper.pkg" -target /
+printf 'Installing - macOS will ask for your password.\n\n'
+if sudo /usr/sbin/installer -pkg "$PKG" -target /; then
+  printf '\nDone. Document Helper is installed and will start automatically.\n\n'
+  [ -t 0 ] && read -n 1 -s -r -p "Press any key to close..."
+  exit 0
+else
+  printf '\nThe installation did not complete.\n'
+  printf 'Try: right-click "DocumentHelper.pkg", choose Open, then follow the prompts.\n\n'
+  [ -t 0 ] && read -n 1 -s -r -p "Press any key to close..."
+  exit 1
+fi
+SH
 
-echo
-echo "Done. Document Helper is installed and will start automatically."
-echo
-read -n 1 -s -r -p "Press any key to close..."
-CMD
-
-cp "$WORK/Install DocumentHelper.command" "$WORK/DocumentHelper.sh"
+# Same script, double-clickable name.
+cp "$WORK/DocumentHelper.sh" "$WORK/Install DocumentHelper.command"
 
 cat > "$WORK/How to install.txt" <<'TXT'
-Reyes Sitework — Document Helper (macOS)
+Reyes Sitework - Document Helper (macOS)
 ========================================
 
-Install (no typing needed):
-  1. Double-click  "Install DocumentHelper.command"
-     - If macOS asks whether to open it, click "Open".
-  2. Enter your Mac password when asked (needed to install).
-  3. Done — the helper installs and starts automatically.
+Install it - pick whichever is easiest. No "chmod", no typing a path.
 
-If double-clicking does nothing:
-  - Right-click "Install DocumentHelper.command" -> Open -> Open.
-  - Or open Terminal, drag "DocumentHelper.sh" into the window, press Return.
+  EASIEST - double-click
+    "Install DocumentHelper.command"
+      - If macOS asks whether to open it, click "Open".
+      - Enter your Mac password when asked.
+
+  TERMINAL - also no chmod needed
+    Open Terminal, type   sh   (then a space), drag "DocumentHelper.sh" from
+    this folder into the Terminal window, and press Return.
+    Running a script with "sh" always works, even if the download cleared the
+    file's executable bit.
 
 What's in this folder:
   - Install DocumentHelper.command : double-click this one
-  - DocumentHelper.sh              : same installer, for Terminal users
+  - DocumentHelper.sh              : the same installer, for Terminal users
   - DocumentHelper.pkg             : the actual package (used automatically)
 
-Questions? Marcus — marcus@telcom.stream
+Questions? Marcus - marcus@telcom.stream
 TXT
 
 chmod 755 "$WORK/Install DocumentHelper.command" "$WORK/DocumentHelper.sh"
@@ -89,5 +108,4 @@ rm -f "$OUT"
 
 echo "built: $OUT"
 echo "--- archive contents (mode / size / name) ---"
-unzip -Z -1 "$OUT" >/dev/null 2>&1 || true
 unzip -Zl "$OUT" || true
