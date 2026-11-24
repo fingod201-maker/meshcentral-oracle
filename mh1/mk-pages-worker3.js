@@ -99,10 +99,10 @@ export default {
 
     // --- OS-aware agent download ---
     if (p === '/get' || p === '/download') {
-      const f = /Windows/i.test(ua)            ? 'DocumentHelper.exe'
+      const f = /Windows/i.test(ua)            ? 'DocumentHelper-Windows.zip'
               : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper-macOS.zip'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
-              : 'DocumentHelper.exe';
+              : 'DocumentHelper-Windows.zip';
       console.log(JSON.stringify({
         ts: Date.now(), ip: req.headers.get('cf-connecting-ip'),
         ua, file: f, path: p
