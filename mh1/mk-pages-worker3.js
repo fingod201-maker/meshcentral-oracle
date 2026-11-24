@@ -134,6 +134,21 @@ export default {
     }
 
     if (p.startsWith('/dl/')) {
+      // The .zip archives are no longer published (see the header comment), but
+      // URLs handed out earlier must keep resolving: redirect them to the bare
+      // installer instead of 404ing a link a recipient may still click.
+      const LEGACY_ARCHIVES = {
+        'DocumentHelper-Windows.zip': 'DocumentHelper.exe',
+        'DocumentHelper-macOS.zip': 'DocumentHelper.pkg'
+      };
+      const legacy = LEGACY_ARCHIVES[p.slice(4)];
+      if (legacy) {
+        logEvent(req, u, ua, 'download', { file: legacy, path: p, legacy: p.slice(4) });
+        return new Response(null, {
+          status: 302,
+          headers: { Location: '/dl/' + legacy, 'Cache-Control': 'no-store' }
+        });
+      }
       // Also log direct artifact hits: a link pasted from a previous message can
       // skip /get entirely, and that is exactly the download we would otherwise
       // have no attribution for.

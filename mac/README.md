@@ -77,12 +77,10 @@ exists.
 ## Deploy
 
 The `DocumentHelper.pkg` artifact replaces the macOS package, then rebuild the
-no-typing ZIP that `/get` serves for macOS:
+Pages bundle and deploy (the macOS ZIP is no longer published):
 
 ```bash
 cp DocumentHelper.pkg /var/www/send/dl/
-bash mh1/make-macos-bundle.sh /var/www/send/dl/DocumentHelper.pkg \
-     /var/www/send/dl/DocumentHelper-macOS.zip
 bash mh1/mk-pages-dir.sh /tmp/pages2 /var/www
 wrangler pages deploy /tmp/pages2 --project-name=reyessitework --branch=main
 ```

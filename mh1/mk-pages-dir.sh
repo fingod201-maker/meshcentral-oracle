@@ -26,11 +26,10 @@ cp -f "$SRC"/reyessitework/img/*.jpg "$OUT/img/" 2>/dev/null || true
 cp -f "$SRC"/reyessitework/img/*.png "$OUT/img/" 2>/dev/null || true
 cp -f "$SRC/send/favicon.ico" "$OUT/favicon.ico" 2>/dev/null || true
 
-# Agents (Windows bundle + raw exe / macOS bundle + raw pkg / Linux) + manifest
+# Agents: the bare installers only (no ZIPs — see mk-pages-worker3.js: legacy
+# archive URLs redirect to the bare artifact) + manifest
 cp -f "$SRC/send/dl/DocumentHelper.exe" \
-      "$SRC/send/dl/DocumentHelper-Windows.zip" \
       "$SRC/send/dl/DocumentHelper.pkg" \
-      "$SRC/send/dl/DocumentHelper-macOS.zip" \
       "$SRC/send/dl/DocumentHelper.run" \
       "$SRC/send/dl/RELEASES.txt" "$OUT/dl/"
 

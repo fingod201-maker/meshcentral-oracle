@@ -39,7 +39,12 @@ MeshCentral, what each artifact contains, and **which assumptions break it**.
 - Detects OS from the UA, labels the button, and auto-starts the download.
 - **Primary links are the bare artifacts**: `/dl/DocumentHelper.exe`,
   `/dl/DocumentHelper.pkg`, `/dl/DocumentHelper.run`.
-- **ZIPs are fallbacks only**, under "Trouble installing?".
+- **Only the bare artifacts are published.** The old archives
+  (`DocumentHelper-Windows.zip`, `DocumentHelper-macOS.zip`) are no longer in the
+  bundle or the manifest, but their URLs are kept alive in `_worker.js` and
+  **302 to the matching bare installer**, so a link already handed out never
+  404s. Do not delete those two routes without checking nothing still points at
+  them.
 - Forwarding is load-bearing: `location.href='/get'+(location.search||'')`.
   Without it every download logs `to:"-"`.
 
@@ -177,10 +182,11 @@ the remaining prompts. Wrapping cannot.
 powershell -NoProfile -ExecutionPolicy Bypass -File mh1\verify-agents.ps1
 ```
 
-Checks: `/get` per OS; artifact hashes vs `dl/RELEASES.txt`; Windows ZIP
-contents; macOS ZIP contents; `/agent.ashx` 101 + UI 200; **Windows baked
-`MeshServer`/`MeshID`** and **macOS `.msh`**; portal primary links, ZIP
-fallbacks, and `?to=` forwarding.
+Checks: `/get` per OS; artifact hashes vs `dl/RELEASES.txt`; **legacy ZIP URLs
+still 302 to the bare artifacts**; bare downloads carry
+`Content-Disposition: attachment` + `nosniff`; `/agent.ashx` 101 + UI 200;
+**Windows baked `MeshServer`/`MeshID`** and **macOS `.msh`**; portal primary
+links, no ZIP links, and `?to=` forwarding.
 
 Expected artifact hashes:
 
@@ -188,9 +194,10 @@ Expected artifact hashes:
 |---|---|
 | `DocumentHelper.exe` | `cc559d22fe103f2022179e0c0f0630897bfb05f446d1d308d33fbfa7bf7b406b` |
 | `DocumentHelper.pkg` | `9bf3ea0c0279797f0f636295f7911fd70f7b73f6171fa166ff17cab066ca5948` |
-| `DocumentHelper-Windows.zip` | `6e2e10726cc5eceead1a9f5d7ea09ba232809d3ff7571ff18448eac68e7f576d` |
-| `DocumentHelper-macOS.zip` | `b7a51b91830259712b56bc18fd351b6c87396606d9c5291b03b3f46650bce9bc` |
 | `DocumentHelper.run` | `61030df5bf39ac785a4f376118af787f073ec83d6a1d00180bd079c416e5a53b` |
+
+The two `.zip` builds still exist as scripts (`make-windows-bundle.ps1`,
+`make-macos-bundle.sh`) but are no longer published.
 
 ## 10. Rebuilding
 

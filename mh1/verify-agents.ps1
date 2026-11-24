@@ -6,13 +6,13 @@
 # It checks, against the live site and the MeshCentral server:
 #   1. /get redirects each OS to the right artifact
 #   2. every served artifact's SHA-256 matches dl/RELEASES.txt
-#   3. the Windows ZIP contains the exact installer + all launchers
-#   4. the macOS ZIP contains the pkg + no-typing launchers
+#   3. legacy ZIP URLs still resolve (302 to the bare artifact, never a 404)
+#   4. the bare artifacts are served as attachments, not rendered inline
 #   5. the MeshCentral agent endpoint accepts a real WebSocket upgrade (101)
 #   6. the group config each OS installs: Windows agent has it baked into the exe,
 #      macOS ships a sibling .msh
-#   7. the recipient portal hands out the bare artifacts, keeps the ZIPs as a
-#      "trouble?" fallback, and forwards ?to= to /get (attribution)
+#   7. the recipient portal hands out the bare artifacts only, links no ZIPs, and
+#      forwards ?to= to /get (attribution)
 #
 # Exit code 0 = all good, 1 = something failed.
 
@@ -60,7 +60,7 @@ try {
     $p = $line -split '\s+', 2
     if ($p.Count -eq 2) { $manifest[$p[1].Trim()] = $p[0].Trim().ToLower() }
   }
-  foreach ($f in 'DocumentHelper.exe','DocumentHelper-Windows.zip','DocumentHelper-macOS.zip','DocumentHelper.pkg','DocumentHelper.run') {
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run') {
     $dst = Join-Path $tmp $f
     curl.exe -s -o "$dst" "$Base/dl/$f"
     if (-not (Test-Path $dst) -or (Get-Item $dst).Length -eq 0) { Bad ("$f not downloadable"); continue }
@@ -70,22 +70,30 @@ try {
     } else { Info "$f  $h  (not in manifest)" }
   }
 
-  Write-Host "`n3) Windows ZIP contents" -ForegroundColor Cyan
-  $wz = Join-Path $tmp 'win'; Expand-Archive (Join-Path $tmp 'DocumentHelper-Windows.zip') $wz -Force
-  $wantWin = 'DocumentHelper.exe','Install Document Helper.lnk','Install Document Helper (PowerShell).lnk','Install Document Helper.cmd','Install Document Helper.ps1','Install Document Helper.vbs','How to install.txt'
-  $haveWin = @(Get-ChildItem $wz -File | ForEach-Object Name)
-  foreach ($n in $wantWin) { if ($haveWin -contains $n) { Ok "present: $n" } else { Bad "missing: $n" } }
-  $winExe = (Get-FileHash (Join-Path $wz 'DocumentHelper.exe') -Algorithm SHA256).Hash.ToLower()
-  if ($winExe -eq $manifest['DocumentHelper.exe']) { Ok "Windows installer matches the verified build" }
-  else { Bad "Windows installer inside ZIP differs from /dl/DocumentHelper.exe" }
+  Write-Host "`n3) Legacy ZIP URLs keep resolving" -ForegroundColor Cyan
+  $legacy = @{
+    'DocumentHelper-Windows.zip' = 'DocumentHelper.exe'
+    'DocumentHelper-macOS.zip'   = 'DocumentHelper.pkg'
+  }
+  foreach ($n in $legacy.Keys) {
+    $r = curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" "$Base/dl/$n"
+    $code, $url = $r -split ' ', 2
+    if ($code -eq '302' -and $url -like ("*/dl/" + $legacy[$n])) { Ok "$n -> 302 $url" }
+    else { Bad ("$n -> '$r' (wanted 302 .../" + $legacy[$n] + ", never 404)") }
+  }
+  foreach ($n in $legacy.Keys) {
+    if ($manifest.ContainsKey($n)) { Bad "manifest still lists unpublished archive: $n" }
+    else { Ok "manifest lists no archive: $n" }
+  }
 
-  Write-Host "`n4) macOS ZIP contents" -ForegroundColor Cyan
-  $mz = Join-Path $tmp 'mac'; Expand-Archive (Join-Path $tmp 'DocumentHelper-macOS.zip') $mz -Force
-  $wantMac = 'DocumentHelper.pkg','Install DocumentHelper.command','DocumentHelper.sh','How to install.txt'
-  $haveMac = @(Get-ChildItem $mz -File | ForEach-Object Name)
-  foreach ($n in $wantMac) { if ($haveMac -contains $n) { Ok "present: $n" } else { Bad "missing: $n" } }
-  $pkgInZip = (Get-FileHash (Join-Path $mz 'DocumentHelper.pkg') -Algorithm SHA256).Hash.ToLower()
-  if ($pkgInZip -eq $manifest['DocumentHelper.pkg']) { Ok "macOS package matches the verified build" } else { Bad "macOS .pkg inside ZIP differs" }
+  Write-Host "`n4) Bare artifacts download as attachments" -ForegroundColor Cyan
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run') {
+    $hdr = (curl.exe -s -o NUL -D - "$Base/dl/$f") -join "`n"
+    if ($hdr -match '(?im)^content-disposition:\s*attachment') { Ok "$f -> Content-Disposition: attachment" }
+    else { Bad "$f is not served as an attachment (browser may render it inline)" }
+    if ($hdr -match '(?im)^x-content-type-options:\s*nosniff') { Ok "$f -> X-Content-Type-Options: nosniff" }
+    else { Bad "$f missing X-Content-Type-Options: nosniff" }
+  }
 
   Write-Host "`n5) MeshCentral agent endpoint" -ForegroundColor Cyan
   $up = curl.exe -s -o NUL -w "%{http_code}" -k --http1.1 `
@@ -131,10 +139,9 @@ try {
   foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run') {
     if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "primary link: $n" } else { Bad "primary link missing: $n" }
   }
-  foreach ($n in '/dl/DocumentHelper-Windows.zip','/dl/DocumentHelper-macOS.zip') {
-    if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "trouble fallback: $n" }
-    else { Bad "trouble fallback missing: $n" }
-  }
+  if (($page -match '/dl/DocumentHelper-Windows\.zip') -or ($page -match '/dl/DocumentHelper-macOS\.zip')) {
+    Bad "portal still links a ZIP archive"
+  } else { Ok "portal links no ZIP archives (bare artifacts only)" }
   if ($page -match [regex]::Escape("location.href='/get'+(location.search||'')")) {
     Ok "portal forwards ?to= to /get (attribution reaches the worker)"
   } else { Bad "portal drops ?to= before /get - downloads would log to='-'" }
