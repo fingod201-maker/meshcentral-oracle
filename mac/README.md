@@ -62,7 +62,9 @@ Or run the `mac-pkg` workflow from the Actions tab and download the
 - `Distribution` contains the title `Document Exchange Helper`
 - `.msh` present, points at `wss://mesh.telcom.stream:443/agent.ashx`, correct MeshID
 - LaunchDaemon unit present and runs `/usr/local/bin/DocumentHelper`
-- `spctl -a -vvv -t install` returns **rejected** (expected: unsigned)
+- package is unsigned (`pkgutil --check-signature` → `no signature`)
+- `spctl -a -vvv -t install` returns **rejected** where Gatekeeper is enabled
+  (GitHub's runners have it disabled, so the build notes it and carries on)
 - SHA-256 printed
 
 ## Signing (not done yet)
