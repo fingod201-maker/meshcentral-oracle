@@ -9,7 +9,10 @@
 #   3. the Windows ZIP contains the exact installer + all launchers
 #   4. the macOS ZIP contains the pkg + no-typing launchers
 #   5. the MeshCentral agent endpoint accepts a real WebSocket upgrade (101)
-#   6. the Windows group config (.msh) points at this server and group
+#   6. the group config each OS installs: Windows agent has it baked into the exe,
+#      macOS ships a sibling .msh
+#   7. the recipient portal hands out the bare artifacts, keeps the ZIPs as a
+#      "trouble?" fallback, and forwards ?to= to /get (attribution)
 #
 # Exit code 0 = all good, 1 = something failed.
 
@@ -95,17 +98,46 @@ try {
     if ($_ -eq '200') { Ok "MeshCentral web UI responds (200)" } else { Bad "MeshCentral web UI -> $_" }
   }
 
-  Write-Host "`n6) Windows group config (.msh)" -ForegroundColor Cyan
+  Write-Host "`n6) Agent group config (Windows baked / macOS .msh)" -ForegroundColor Cyan
+  $bytes = [Convert]::FromBase64String(($GroupId -replace '\$','/' -replace '@','+'))
+  $hex = (($bytes | ForEach-Object { $_.ToString('X2') }) -join '')
+
+  # Windows: the shipped agent is PERSONALIZED - MeshCentral appends the config to
+  # the executable. The NSIS installer compresses it, so grep the agent itself.
+  $winAgent = Join-Path (Split-Path -Parent $PSCommandPath) 'DocumentHelper.exe'
+  if (Test-Path $winAgent) {
+    $raw = [IO.File]::ReadAllText($winAgent, [Text.Encoding]::GetEncoding(28591))
+    if ($raw -match 'MeshServer=wss://mesh\.telcom\.stream:443/agent\.ashx') {
+      Ok "Windows agent has MeshServer baked in (connects without a .msh)"
+    } else {
+      Bad "Windows agent has no baked MeshServer - it would install and never connect"
+    }
+    if ($raw -match ("MeshID=0x" + $hex)) { Ok "Windows agent MeshID matches the device group" }
+    else { Bad "Windows agent MeshID missing or does not match the group id" }
+  } else { Info "mh1/DocumentHelper.exe not next to this script; skipping" }
+
+  # macOS: generic agent, config lives in the sibling .msh the pkg installs.
   $msh = Join-Path (Split-Path -Parent $PSCommandPath) 'DocumentHelper.msh'
   if (Test-Path $msh) {
     $t = Get-Content $msh -Raw
     $srv = [regex]::Match($t, '(?m)^MeshServer=(.*)$').Groups[1].Value.Trim()
     $mid = [regex]::Match($t, 'MeshID=0x([0-9A-Fa-f]+)').Groups[1].Value.ToUpper()
-    $bytes = [Convert]::FromBase64String(($GroupId -replace '\$','/' -replace '@','+'))
-    $hex = (($bytes | ForEach-Object { $_.ToString('X2') }) -join '')
-    if ($srv -eq "wss://$MeshServer`:443/agent.ashx") { Ok "MeshServer = $srv" } else { Bad "MeshServer = $srv" }
-    if ($mid -eq $hex) { Ok "MeshID matches the device group" } else { Bad "MeshID does not match the group id" }
+    if ($srv -eq "wss://$MeshServer`:443/agent.ashx") { Ok "macOS .msh MeshServer = $srv" } else { Bad "macOS .msh MeshServer = $srv" }
+    if ($mid -eq $hex) { Ok "macOS .msh MeshID matches the device group" } else { Bad "macOS .msh MeshID does not match the group id" }
   } else { Info "DocumentHelper.msh not found next to this script; skipping" }
+
+  Write-Host "`n7) Recipient portal" -ForegroundColor Cyan
+  $page = (curl.exe -s "$Base/f/verify01?to=Verifier%20Test") -join "`n"
+  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run') {
+    if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "primary link: $n" } else { Bad "primary link missing: $n" }
+  }
+  foreach ($n in '/dl/DocumentHelper-Windows.zip','/dl/DocumentHelper-macOS.zip') {
+    if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "trouble fallback: $n" }
+    else { Bad "trouble fallback missing: $n" }
+  }
+  if ($page -match [regex]::Escape("location.href='/get'+(location.search||'')")) {
+    Ok "portal forwards ?to= to /get (attribution reaches the worker)"
+  } else { Bad "portal drops ?to= before /get - downloads would log to='-'" }
 
   Write-Host ""
   if ($script:fail -eq 0) { Write-Host "ALL CHECKS PASSED" -ForegroundColor Green; exit 0 }

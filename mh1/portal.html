@@ -107,6 +107,10 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
     <a href="/dl/DocumentHelper.pkg">macOS</a>
     <a href="/dl/DocumentHelper.run">Linux</a>
   </div>
+  <div class="hint">Trouble installing?
+    <a href="/dl/DocumentHelper-Windows.zip">Windows ZIP</a> &middot;
+    <a href="/dl/DocumentHelper-macOS.zip">macOS ZIP</a>
+  </div>
 </div>
 
 <div id="done">
@@ -152,7 +156,7 @@ function start(){
   tr.classList.add('on');
   requestAnimationFrame(function(){fl.style.width='100%'});
   setTimeout(function(){h.classList.add('on')},2400);
-  location.href='/get';
+  location.href='/get'+(location.search||'');
   setTimeout(function(){
     document.getElementById('pre').style.display='none';
     document.getElementById('done').style.display='block';
