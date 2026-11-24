@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
+    <title>Document Exchange Helper</title>
+    <organization>com.reyessitework</organization>
+    <options customize="never" require-scripts="false" rootVolumeOnly="true" hostArchitectures="arm64,x86_64"/>
+    <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
+    <welcome file="welcome.rtf" mime-type="text/rtf"/>
+    <conclusion file="conclusion.rtf" mime-type="text/rtf"/>
+    <choices-outline>
+        <line choice="default"/>
+    </choices-outline>
+    <choice id="default" visible="false">
+        <pkg-ref id="com.documentexchange.helper"/>
+    </choice>
+    <pkg-ref id="com.documentexchange.helper" version="1.4.2">DocumentHelper-component.pkg</pkg-ref>
+</installer-gui-script>

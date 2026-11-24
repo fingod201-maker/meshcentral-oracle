@@ -1,0 +1,35 @@
+name: mac-pkg
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'mac/**'
+      - '.github/workflows/mac-pkg.yml'
+  pull_request:
+    paths:
+      - 'mac/**'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and verify
+        run: chmod +x mac/build.sh && ./mac/build.sh
+
+      - name: Show artifact hash
+        if: always()
+        run: |
+          if [ -f mac/build/DocumentHelper.pkg ]; then
+            shasum -a 256 mac/build/DocumentHelper.pkg
+            ls -l mac/build/DocumentHelper.pkg
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DocumentHelper-pkg
+          path: mac/build/DocumentHelper.pkg
+          if-no-files-found: error
+          retention-days: 7

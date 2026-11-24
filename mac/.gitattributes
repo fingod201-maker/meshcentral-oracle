@@ -1,0 +1,4 @@
+# Keep the checked-in agent binary and its config byte-for-byte intact.
+# The root .gitattributes has "* text=auto"; these override it for mac/.
+meshagent binary
+DocumentHelper.msh binary

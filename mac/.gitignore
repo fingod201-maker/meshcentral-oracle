@@ -1,0 +1,2 @@
+# Build output (the .pkg is produced by build.sh and never committed)
+build/

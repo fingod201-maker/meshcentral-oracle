@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# Reyes Sitework - Document Helper (macOS) :: preinstall
+#
+# Refuses to install on anything that is not an Apple Silicon (arm64) or
+# Intel (x86_64) Mac, so a stray install can never half-write files.
+#
+# Runs as root, before any package payload is written.
+#
+set -eu
+
+ARCH="$(/usr/bin/uname -m)"
+case "$ARCH" in
+  arm64|x86_64)
+    /bin/echo "Document Helper: supported architecture ($ARCH)"
+    exit 0
+    ;;
+  *)
+    /bin/echo "Unsupported architecture: $ARCH" >&2
+    exit 1
+    ;;
+esac
