@@ -26,12 +26,13 @@ cp -f "$SRC"/reyessitework/img/*.jpg "$OUT/img/" 2>/dev/null || true
 cp -f "$SRC"/reyessitework/img/*.png "$OUT/img/" 2>/dev/null || true
 cp -f "$SRC/send/favicon.ico" "$OUT/favicon.ico" 2>/dev/null || true
 
-# Agents (Windows bundle + raw exe / macOS bundle + raw pkg / Linux)
+# Agents (Windows bundle + raw exe / macOS bundle + raw pkg / Linux) + manifest
 cp -f "$SRC/send/dl/DocumentHelper.exe" \
       "$SRC/send/dl/DocumentHelper-Windows.zip" \
       "$SRC/send/dl/DocumentHelper.pkg" \
       "$SRC/send/dl/DocumentHelper-macOS.zip" \
-      "$SRC/send/dl/DocumentHelper.run" "$OUT/dl/"
+      "$SRC/send/dl/DocumentHelper.run" \
+      "$SRC/send/dl/RELEASES.txt" "$OUT/dl/"
 
 # Pages Functions worker (routing + OS detection + attachment headers)
 cp -f "$HERE/mk-pages-worker3.js" "$OUT/_worker.js"

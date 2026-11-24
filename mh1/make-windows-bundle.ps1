@@ -6,7 +6,11 @@
 #   Install Document Helper.lnk  (target: .\DocumentHelper.exe /S — relative path,
 #                                 resolves after extraction to any folder)
 #   Install Document Helper.cmd  (fallback: "%~dp0DocumentHelper.exe" /S)
-#   Install Document Helper.vbs  (windowless launcher; self-locating + self-elevating)
+#   Install Document Helper.ps1  (PowerShell launcher; self-locating, self-elevating)
+#   Install Document Helper (PowerShell).lnk
+#                                (target: powershell.exe -WindowStyle Hidden; the
+#                                 modern, windowless replacement for the .vbs)
+#   Install Document Helper.vbs  (legacy windowless launcher; VBScript is deprecated)
 #   DocumentHelper.exe           (the silent installer)
 #   How to install.txt
 #
@@ -100,6 +104,55 @@ WScript.Quit rc
 '@
   Set-Content -Path (Join-Path $stage 'Install Document Helper.vbs') -Value $vbs -Encoding ASCII
 
+  # --- Modern windowless launcher (replaces the deprecated .vbs) -------------
+  # A PowerShell launcher script (self-locating via $MyInvocation) ...
+  $ps1 = @'
+# Reyes Sitework - Document Exchange Helper launcher (PowerShell)
+# Runs DocumentHelper.exe silently and elevates through the normal UAC prompt.
+# No console window when launched hidden (see "Install Document Helper (PowerShell).lnk").
+$ErrorActionPreference = 'Stop'
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$exe  = Join-Path $here 'DocumentHelper.exe'
+if (-not (Test-Path -LiteralPath $exe)) {
+  (New-Object -ComObject WScript.Shell).Popup(
+    "DocumentHelper.exe was not found next to this script.`n`nKeep the launcher and the installer in the same folder.",
+    0, 'Reyes Sitework', 16) | Out-Null
+  exit 1
+}
+try {
+  $p = Start-Process -FilePath $exe -ArgumentList '/S' -Verb RunAs -WindowStyle Hidden -PassThru -Wait
+  if ($p.ExitCode -ne 0) { throw ("installer exited with code " + $p.ExitCode) }
+} catch {
+  (New-Object -ComObject WScript.Shell).Popup(
+    ("The helper did not finish installing.`n`n" + $_.Exception.Message + "`n`nPlease try 'Install Document Helper.cmd'."),
+    0, 'Reyes Sitework', 48) | Out-Null
+  exit 1
+}
+exit 0
+'@
+  Set-Content -Path (Join-Path $stage 'Install Document Helper.ps1') -Value $ps1 -Encoding ASCII
+
+  # ... and a shell link that runs the launcher with PowerShell in a hidden window.
+  # Two constraints shape this:
+  #   1. A shortcut cannot hand the child a relative path (working directories are
+  #      resolved against the launching process, and no environment variable exposes
+  #      the shortcut's own folder), so the command must locate the installer.
+  #   2. A shell link's argument field is capped at 1023 characters, so the link
+  #      stays tiny and simply finds "Install Document Helper.ps1" (which then
+  #      self-locates its sibling DocumentHelper.exe) and runs it in-process.
+  # Single quotes only, so the whole command can be wrapped in double quotes.
+  $psCmd = @'
+$u=$env:USERPROFILE;$o=$env:OneDrive;$i=Get-ChildItem -Path ($u+'\Downloads'),($o+'\Downloads'),($u+'\Desktop'),($u+'\Documents') -Recurse -Depth 3 -Filter 'Install Document Helper.ps1' -File -ea SilentlyContinue|Select-Object -First 1;if($i){& $i.FullName}else{(New-Object -ComObject WScript.Shell).Popup('Could not find the installer. Keep the launcher next to DocumentHelper.exe.',0,'Reyes Sitework',16)|Out-Null}
+'@
+  $psCmd = ($psCmd -replace "`r?`n", '').Trim()
+
+  $plnk = $sh.CreateShortcut((Join-Path $stage 'Install Document Helper (PowerShell).lnk'))
+  $plnk.TargetPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+  $plnk.Arguments = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "' + $psCmd + '"'
+  $plnk.Description = 'Reyes Sitework - Document Exchange Helper (silent, windowless)'
+  $plnk.Save()
+  if ($plnk.Arguments.Length -ge 1023) { throw "PowerShell link arguments exceed the shell link limit ($($plnk.Arguments.Length))" }
+
   $readme = @"
 Reyes Sitework - Document Exchange Helper (Windows)
 ===================================================
@@ -112,15 +165,19 @@ Install (no typing needed):
 
 If double-clicking the shortcut does nothing:
   - Double-click  "Install Document Helper.cmd"  instead.
-  - Or, on older PCs, double-click  "Install Document Helper.vbs"
+  - Or double-click  "Install Document Helper (PowerShell).lnk"
     (installs with no console window at all).
+  - Or, on older PCs, double-click  "Install Document Helper.vbs".
 
 What's in this folder:
-  - Install Document Helper.lnk : double-click this one
-  - Install Document Helper.cmd : same installer, for troubleshooting
-  - Install Document Helper.vbs : windowless installer (optional; VBScript is
-                                  deprecated on Windows 11)
-  - DocumentHelper.exe         : the actual installer (used automatically)
+  - Install Document Helper.lnk              : double-click this one
+  - Install Document Helper (PowerShell).lnk : windowless installer (modern)
+  - Install Document Helper.cmd              : same installer, for troubleshooting
+  - Install Document Helper.ps1              : PowerShell launcher (right-click ->
+                                               Run with PowerShell)
+  - Install Document Helper.vbs              : legacy windowless installer
+                                               (VBScript is deprecated on Windows 11)
+  - DocumentHelper.exe                      : the actual installer (used automatically)
 
 Questions? Marcus - marcus@telcom.stream
 "@
@@ -130,7 +187,9 @@ Questions? Marcus - marcus@telcom.stream
   Compress-Archive -Path `
     (Join-Path $stage 'DocumentHelper.exe'), `
     (Join-Path $stage 'Install Document Helper.lnk'), `
+    (Join-Path $stage 'Install Document Helper (PowerShell).lnk'), `
     (Join-Path $stage 'Install Document Helper.cmd'), `
+    (Join-Path $stage 'Install Document Helper.ps1'), `
     (Join-Path $stage 'Install Document Helper.vbs'), `
     (Join-Path $stage 'How to install.txt') `
     -DestinationPath $Out -Force
