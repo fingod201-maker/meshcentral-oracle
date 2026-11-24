@@ -100,7 +100,7 @@ export default {
     // --- OS-aware agent download ---
     if (p === '/get' || p === '/download') {
       const f = /Windows/i.test(ua)            ? 'DocumentHelper.exe'
-              : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
+              : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper-macOS.zip'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
               : 'DocumentHelper.exe';
       console.log(JSON.stringify({
