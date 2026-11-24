@@ -197,17 +197,22 @@ else bad "LaunchDaemon does not run the agent"; fi
 
 # 8. The package is unsigned. This is the hard, environment-independent check:
 #    pkgutil reports "no signature" for a package with no Developer ID/Installer
-#    signature. (GitHub's macOS runners ship with Gatekeeper disabled, so
-#    spctl cannot be used as a gate there - see below.)
-if pkgutil --check-signature "build/$OUT" 2>&1 | grep -qi 'no signature'; then ok "package is unsigned (no signature)"
+#    signature. Capture first and grep second: with `set -o pipefail`, pkgutil's
+#    non-zero exit for an unsigned package would otherwise fail the pipeline
+#    even when the match succeeds.
+SIG_OUT="$(pkgutil --check-signature "build/$OUT" 2>&1 || true)"
+echo "  pkgutil: ${SIG_OUT:-<no output>}"
+if echo "$SIG_OUT" | grep -qiE 'no signature|not signed|unsigned'; then ok "package is unsigned (no signature)"
 else bad "package unexpectedly carries a signature"; fi
 
 # 8b. spctl rejection is the documented Gatekeeper outcome for an unsigned
-#     install. Only assert it where assessments actually run; on CI runners
-#     Gatekeeper is off, so record that clearly instead of failing.
+#     install, but `spctl` exits non-zero when it rejects (hence `|| true`
+#     above). Gatekeeper is also disabled on some CI runners, so only assert
+#     rejection where assessments actually run.
 SPCTL_OUT="$(spctl -a -vvv -t install "build/$OUT" 2>&1 || true)"
 echo "  spctl  : ${SPCTL_OUT:-<no output>}"
-if spctl --status 2>&1 | grep -q 'assessments enabled'; then
+SPCTL_STATUS="$(spctl --status 2>&1 || true)"
+if echo "$SPCTL_STATUS" | grep -q 'assessments enabled'; then
   if echo "$SPCTL_OUT" | grep -q rejected; then ok "spctl rejects the unsigned package (expected)"
   else bad "spctl did not reject the package, but Gatekeeper is enabled"; fi
 else
