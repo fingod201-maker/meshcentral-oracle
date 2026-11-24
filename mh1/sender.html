@@ -105,8 +105,8 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
     <input id="rcpt" type="text" placeholder="e.g. Lachelle" maxlength="64" autocomplete="off">
   </div>
   <div class="row">
-    <label for="tok">Folder token</label>
-    <input id="tok" type="text" placeholder="fb082159" maxlength="32" autocomplete="off">
+    <label for="tok">Folder token (optional)</label>
+    <input id="tok" type="text" placeholder="auto — unique per recipient" maxlength="32" autocomplete="off">
   </div>
   <button class="go" id="gen" type="button">Generate link</button>
   <div class="msg" id="msg"></div>
@@ -129,8 +129,9 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   <div class="list" id="list"><div class="empty">No links yet — they'll show up here on this device.</div></div>
 
   <div class="note">
-    Recipients never see this page. The link opens at <b>/f/&lt;token&gt;</b> and only shows the
-    upload/download view. Windows, macOS and Linux each get the matching helper automatically.
+    Recipients never see this page. Every link opens at <b>/f/&lt;code&gt;</b> with its own
+    code, so each person's opens, clicks and downloads are separable in the nginx log.
+    Windows, macOS and Linux each get the matching helper automatically.
   </div>
 </div></main>
 <footer>256-bit TLS &middot; <span id="dom">reyessitework.pages.dev</span></footer>
@@ -140,8 +141,7 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   var $=function(id){return document.getElementById(id)};
   var q=new URLSearchParams(location.search);
   var DEF='fb082159';
-  var token=(q.get('code')||q.get('f')||localStorage.getItem('rs-token')||DEF)
-              .replace(/[^A-Za-z0-9_-]/g,'').slice(0,32)||DEF;
+  var token=(q.get('code')||q.get('f')||'').replace(/[^A-Za-z0-9_-]/g,'').slice(0,32);
   $('tok').value=token;
 
   function clean(v){return (v||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);}
@@ -164,11 +164,31 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   }
 
   var current='';
+  var CODES='rs-codes';
+  function getCodes(){try{return JSON.parse(localStorage.getItem(CODES)||'{}')}catch(e){return {}}}
+  function setCodes(m){try{localStorage.setItem(CODES,JSON.stringify(m))}catch(e){}}
+  function newCode(){
+    try{
+      var a=new Uint8Array(4);
+      (window.crypto||window.msCrypto).getRandomValues(a);
+      return Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2)}).join('');
+    }catch(e){
+      return ('00000000'+Math.floor(Math.random()*0xffffffff).toString(16)).slice(-8);
+    }
+  }
+  /* Manual token in the field wins; otherwise one stable code per recipient,
+     remembered on this device so re-sending the same person reuses their link. */
+  function codeFor(name){
+    var manual=$('tok').value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,32);
+    if(manual)return manual;
+    var m=getCodes(),k=name.toLowerCase();
+    if(!m[k]){m[k]=newCode();setCodes(m);}
+    return m[k];
+  }
   function generate(){
     var name=clean($('rcpt').value);
-    var tok=$('tok').value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,32)||DEF;
     if(!name){flash('Enter the recipient or office name first.',true);$('rcpt').focus();return;}
-    $('tok').value=tok;try{localStorage.setItem('rs-token',tok)}catch(e){}
+    var tok=codeFor(name);
     current=buildUrl(name,tok);
     $('url').textContent=current;
     $('out').classList.add('on');

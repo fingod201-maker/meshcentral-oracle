@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""Emit an `install` event when a new node enrolls in MeshCentral.
+
+MeshCentral runs on NeDB here: meshcentral-data/meshcentral.db is an
+append-only log, one JSON document per line. We scan it for `node//...` docs,
+remember which ids we have seen in STATE, and append exactly one event per new
+node to EVENTS - the same JSON shape nginx writes to track.log, so a single
+report can read both.
+
+The first run (no STATE) baselines the nodes that already exist and emits
+nothing; otherwise every existing machine would look like a fresh install.
+
+Node enrollment is the only trustworthy install signal: a download is just a
+download, but a node only appears after the agent ran and authenticated.
+
+Correlation back to a recipient is by public IP (see track-report).
+"""
+
+import json
+import os
+import sys
+import time
+
+DB = os.environ.get("MC_DB", "/opt/meshcentral/meshcentral-data/meshcentral.db")
+STATE = os.environ.get("MC_STATE", "/var/lib/mc-track/seen.json")
+EVENTS = os.environ.get("MC_EVENTS", "/var/log/mc-track/installs.log")
+MAX_DB = 512 * 1024 * 1024
+
+
+def iso(ts=None):
+    return time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime(ts or time.time()))
+
+
+def load_seen():
+    try:
+        with open(STATE, "r", encoding="utf-8") as f:
+            return json.load(f), True
+    except (FileNotFoundError, ValueError):
+        return {}, False
+
+
+def save_seen(seen):
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    tmp = STATE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(seen, f, separators=(",", ":"))
+    os.replace(tmp, STATE)
+
+
+def scan(db):
+    """Return {nodeid: {...}} using the first doc for identity and the last for ip."""
+    nodes = {}
+    with open(db, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            _id = d.get("_id") or ""
+            if not _id.startswith("node//"):
+                continue
+            n = nodes.get(_id)
+            if n is None:
+                n = nodes[_id] = {
+                    "node": _id,
+                    "name": d.get("name") or "",
+                    "meshid": d.get("meshid") or "",
+                    "ip": "",
+                }
+            if d.get("name"):
+                n["name"] = d["name"]
+            if d.get("meshid"):
+                n["meshid"] = d["meshid"]
+            if d.get("ip"):
+                n["ip"] = d["ip"]
+    return nodes
+
+
+def emit(event):
+    os.makedirs(os.path.dirname(EVENTS), exist_ok=True)
+    line = json.dumps(event, separators=(",", ":")) + "\n"
+    fd = os.open(EVENTS, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+    try:
+        os.write(fd, line.encode("utf-8"))
+    finally:
+        os.close(fd)
+
+
+def main():
+    if not os.path.exists(DB):
+        print("mc-track: no database at %s" % DB)
+        return 1
+    size = os.path.getsize(DB)
+    if size > MAX_DB:
+        print("mc-track: database is %d bytes, refusing to scan" % size)
+        return 1
+
+    nodes = scan(DB)
+    seen, existed = load_seen()
+
+    new = [n for nid, n in nodes.items() if nid not in seen]
+    for n in new:
+        if not existed:
+            continue  # baseline run: record, do not emit
+        ev = {
+            "ts": iso(),
+            "src": "meshcentral",
+            "event": "install",
+            "node": n["node"],
+            "name": n["name"],
+            "meshid": n["meshid"],
+            "ip": n["ip"],
+        }
+        emit(ev)
+        print("install: %s %s %s" % (n["node"], n["name"], n["ip"]))
+
+    now = iso()
+    for nid in nodes:
+        seen.setdefault(nid, {"first_seen": now, "name": nodes[nid]["name"]})
+    save_seen(seen)
+
+    print("mc-track: %d nodes, %d new, %s" %
+          (len(nodes), 0 if not existed else len(new),
+           "baseline" if not existed else "ok"))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

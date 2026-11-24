@@ -146,6 +146,44 @@ try {
     Ok "portal forwards ?to= to /get (attribution reaches the worker)"
   } else { Bad "portal drops ?to= before /get - downloads would log to='-'" }
 
+  Write-Host "`n8) Interaction tracking (nginx /t/ + per-recipient codes)" -ForegroundColor Cyan
+  # The portal beacons to https://$MeshServer/t/<event>?... . sendBeacon issues a
+  # POST, so both verbs must answer; a 204 means "logged, nothing to render".
+  # /t/ must not shadow MeshCentral - that route uses a non-^~/ prefix, so
+  # /agent.ashx and / still proxy (checked in section 5).
+  foreach ($verb in 'GET','POST') {
+    $tc = curl.exe -s -o NUL -w "%{http_code}" -X $verb "https://$MeshServer/t/selftest?e=selftest&c=verify&to=Verifier&os=Linux"
+    if ($tc -eq '204') { Ok "/t/selftest accepts $verb (204)" } else { Bad "/t/selftest $verb -> '$tc' (wanted 204)" }
+  }
+  if ($page -match [regex]::Escape("https://$MeshServer/t/")) {
+    Ok "portal beacons to https://$MeshServer/t/"
+  } else { Bad "portal does not beacon to the tracking endpoint" }
+  foreach ($evt in 'open','click','download') {
+    if ($page -match [regex]::Escape("track('$evt')")) { Ok "portal fires the '$evt' event" }
+    else { Bad "portal never fires the '$evt' event" }
+  }
+  # The client must accept the same code shape the worker routes, or a manual
+  # token (any [A-Za-z0-9_-] up to 32 chars) beacons as code:"-".
+  if ($page -match [regex]::Escape('[A-Za-z0-9_-]{1,32}')) {
+    Ok "portal extracts the full recipient code (manual tokens included)"
+  } else { Bad "portal uses a narrow code pattern; manual tokens would beacon as '-'" }
+  if ($page -match [regex]::Escape('[a-f0-9]{8}')) {
+    Bad "portal still uses the 8-hex-only code pattern"
+  } else { Ok "portal has no 8-hex-only pattern" }
+
+  # Sender: each recipient gets its own crypographically-random 8-hex code,
+  # remembered on the device, unless the operator types a token manually.
+  $sender = Join-Path (Split-Path -Parent $PSCommandPath) 'sender.html'
+  if (Test-Path $sender) {
+    $s = Get-Content $sender -Raw
+    foreach ($needle in 'getRandomValues','function codeFor','var tok=codeFor(name)') {
+      if ($s -match [regex]::Escape($needle)) { Ok "sender mints unique codes ($needle)" }
+      else { Bad "sender missing unique-code logic: $needle" }
+    }
+    if ($s -match '/f/&lt;code&gt;') { Ok "sender UI says links are per-recipient" }
+    else { Info "sender UI wording not updated to mention per-recipient links" }
+  } else { Info "sender.html not next to this script; skipping" }
+
   Write-Host ""
   if ($script:fail -eq 0) { Write-Host "ALL CHECKS PASSED" -ForegroundColor Green; exit 0 }
   else { Write-Host ("$script:fail CHECK(S) FAILED") -ForegroundColor Red; exit 1 }

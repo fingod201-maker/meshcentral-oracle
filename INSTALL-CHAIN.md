@@ -4,7 +4,9 @@ How a recipient goes from a pasted link to a node that is actually connected in
 MeshCentral, what each artifact contains, and **which assumptions break it**.
 
 ```
-/sender  (passcode)  ->  /f/<token>?to=Name  ->  /get  ->  /dl/<artifact>
+/sender  (passcode)  ->  /f/<code>?to=Name  ->  /get  ->  /dl/<artifact>
+                              |
+                    portal beacons -> https://mesh.telcom.stream/t/<event>  (nginx 204 + JSON log)
                                                               |
               +-----------------------------------------------+
               |                       |                       |
@@ -27,11 +29,18 @@ MeshCentral, what each artifact contains, and **which assumptions break it**.
   ever removed, `/sender` silently falls back to the code default.
 - `POST pass` -> sets `sk` cookie (`HttpOnly; Secure; SameSite=Strict`, 30 days)
   -> 303 to `/sender`. `?logout` clears it.
-- The generator mints **one link per recipient**: `/f/<token>?to=<name>`. The
-  token is shared; `to` is the only per-recipient data, and it is client-side
-  unless something forwards it (see §3).
+- The generator mints **one link per recipient, each with its own code**:
+  `/f/<code>?to=<name>`. The code is 8 crypto-random hex from
+  `crypto.getRandomValues`, remembered per recipient name in `localStorage`
+  (`rs-codes`), so re-sending the same person reuses their link (a per-name map,
+  not a single shared token). Typing a value in the **Folder token** field
+  overrides it (any `[A-Za-z0-9_-]`, up to 32 chars) — useful for a memorable
+  office code, and it is honoured end to end.
+- Both halves are per-recipient now: the `code` in the path *and* `to` in the
+  query. The code is what survives into the nginx log (§11), so two recipients
+  never merge into one row.
 
-## 2. Portal: `/f/<token>`
+## 2. Portal: `/f/<code>`
 
 `mh1/portal.html` -> `/var/www/send/index.html` -> bundle `index.html`.
 
@@ -47,6 +56,12 @@ MeshCentral, what each artifact contains, and **which assumptions break it**.
   them.
 - Forwarding is load-bearing: `location.href='/get'+(location.search||'')`.
   Without it every download logs `to:"-"`.
+- Reads the recipient code from the path with `/\/f\/([A-Za-z0-9_-]{1,32})/`,
+  **the same shape the worker routes**. Keep the two in step: a narrower pattern
+  (the old `[a-f0-9]{8}`) silently beacons `code:"-"` for any manual token.
+- Fires three beacons — `open` on load, `click` on the button, `download` when
+  the download starts — to `https://mesh.telcom.stream/t/<event>?c=&to=&os=`
+  (§11). The worker's own `open` event is separate and carries the same code.
 
 ## 3. Redirect: `/get` and `/dl/`
 
@@ -182,11 +197,14 @@ the remaining prompts. Wrapping cannot.
 powershell -NoProfile -ExecutionPolicy Bypass -File mh1\verify-agents.ps1
 ```
 
-Checks: `/get` per OS; artifact hashes vs `dl/RELEASES.txt`; **legacy ZIP URLs
-still 302 to the bare artifacts**; bare downloads carry
+Checks (8 sections): `/get` per OS; artifact hashes vs `dl/RELEASES.txt`;
+**legacy ZIP URLs still 302 to the bare artifacts**; bare downloads carry
 `Content-Disposition: attachment` + `nosniff`; `/agent.ashx` 101 + UI 200;
 **Windows baked `MeshServer`/`MeshID`** and **macOS `.msh`**; portal primary
-links, no ZIP links, and `?to=` forwarding.
+links, no ZIP links, and `?to=` forwarding; and **tracking** — `/t/` answers
+GET+POST with `204`, the portal beacons `open`/`click`/`download`, the portal
+extracts the full recipient code (no 8-hex-only pattern), and the sender mints
+unique per-recipient codes.
 
 Expected artifact hashes:
 
@@ -212,7 +230,61 @@ The two `.zip` builds still exist as scripts (`make-windows-bundle.ps1`,
 - **After any deploy**: run `verify-agents.ps1`. Do not send links until it is
   green.
 
-## 11. Assumptions that can break this
+## 11. Interaction tracking and the install signal
+
+Two more sinks beyond the worker's console log (§3): nginx records what the
+recipient's browser did, and `mc-track` records whose machine actually enrolled.
+
+### nginx `/t/` — the tracking endpoint
+
+`/etc/nginx/conf.d/send.conf` (on the VM, the `mesh.telcom.stream` server) gains:
+
+```nginx
+log_format trackjson escape=json '{"ts":"$time_iso8601","ip":"$remote_addr",'
+  '"event":"$arg_e","code":"$arg_c","to":"$arg_to","os":"$arg_os",'
+  '"ua":"$http_user_agent","ref":"$http_referer"}';
+
+location ^~ /t/ {
+    access_log /var/log/nginx/track.log trackjson;
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Cache-Control "no-store" always;
+    return 204;
+}
+```
+
+- `^~ /t/` is a longest-prefix (non-regex) match: it cannot be shadowed, and it
+  must not collide with a MeshCentral route. MeshCentral has none under `/t/`,
+  and `/agent.ashx` + `/` still proxy (guarded by verify §5 and §8).
+- `204` + `no-store` renders and caches nothing and never blocks the browser's
+  navigation to `/get`; `sendBeacon` gets a clean answer.
+- One JSON object per line. `escape=json` makes the file valid JSONL as written.
+
+### `mc-track` — enrollment becomes an `install` event
+
+A download is only a download; the machine appears in MeshCentral only *after*
+the agent ran and authenticated. That enrollment is the install signal.
+
+- `/usr/local/bin/mc-track` (`mc-track.service` + `mc-track.timer`,
+  `OnUnitActiveSec=120`) scans the NeDB `meshcentral.db` for `node//` documents,
+  remembers seen ids in `/var/lib/mc-track/seen.json`, and appends one event per
+  **new** node to `/var/log/mc-track/installs.log` with the same field names as
+  nginx: `{"ts","src":"meshcentral","event":"install","node","name","meshid","ip"}`.
+- The **first run baselines and emits nothing**, otherwise every pre-existing
+  machine would look like a fresh install. To re-verify, delete one id from a
+  *copy* of the state file and run again — it must emit exactly that node.
+- Reads the DB read-only; never touches the MeshCentral service or the agent.
+  Install attribution therefore needs **no installer rebuild**.
+
+### `track-report` — the rollup
+
+`sudo /usr/local/bin/track-report` joins both files: per-code open/click/download
+counts, then installs. An install cannot carry the code (the agent does not know
+which link it came from), so it is matched to the most recent `download` from the
+**same public IP** within 24h, printed as
+`<= code <c> (<name>), Ns after download`. It URL-decodes the query values, so
+`Browser%20Proof` prints as `Browser Proof`.
+
+## 12. Assumptions that can break this
 
 1. **Windows config is baked in, not in a `.msh`.** Swap the agent for a generic
    build and Windows enrols nothing. (`verify-agents.ps1` §6 guards this.)
@@ -226,3 +298,19 @@ The two `.zip` builds still exist as scripts (`make-windows-bundle.ps1`,
 6. **Service aliasing.** `aliasPort=443`, `trustedProxy=127.0.0.1`, and
    `certUrl=127.0.0.1:443/` are what make `wss://…:443/agent.ashx` work behind
    the reverse proxy.
+7. **`^~ /t/` must stay a non-regex, non-proxied location.** If it is ever
+   changed to a regex or moved under `/`, it could shadow MeshCentral routes and
+   break enrollment. (verify §5 catches a broken `/agent.ashx`.)
+8. **The portal's code pattern must match the worker's route.** They are two
+   independent regexes (`_worker.js` and `portal.html`); narrowing either one
+   silently drops attribution for manual tokens. (verify §8 checks the client.)
+9. **`mc-track` baselines on first run.** Wiping `/var/lib/mc-track/seen.json`
+   makes the next run treat every existing node as a fresh install (a burst of
+   false `install` events). Delete the state *and* `installs.log` together.
+10. **Install correlation is by public IP + 24h.** Two recipients behind one NAT
+    who download within a day of each other can be mis-attributed. The `code`
+    rows (open/click/download) are always exact; only the install join is fuzzy.
+11. **The tracking files are root-owned and outside git.** `send.conf` is applied
+    on the VM; `mc-track`, `track-report`, and the two units are copied to
+    `/usr/local/bin` and `/etc/systemd/system`. The copies in `mh1/` are the
+    source of truth — re-install from them, do not edit the VM's copies.

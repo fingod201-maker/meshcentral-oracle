@@ -1,0 +1,9 @@
+[Unit]
+Description=MeshCentral enrollment tracker (install events)
+After=network-online.target meshcentral.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mc-track
+User=root
+Nice=10

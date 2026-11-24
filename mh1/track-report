@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Read the interaction logs and print per-recipient rollups.
+
+Sources
+  /var/log/nginx/track.log        one JSON line per portal beacon (open/click/download)
+  /var/log/mc-track/installs.log  one JSON line per new MeshCentral node
+
+The folder code comes from /f/<code>; installs cannot carry it, so they are
+matched to the most recent download from the same public IP (within 24h).
+Run with sudo.
+"""
+
+import json
+import os
+import sys
+import time
+from collections import OrderedDict
+from urllib.parse import unquote
+
+TRACK = "/var/log/nginx/track.log"
+INSTALLS = "/var/log/mc-track/installs.log"
+WINDOW = 24 * 3600
+
+
+def read_jsonl(path):
+    out = []
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.strip()
+                if not line.startswith("{"):
+                    continue
+                try:
+                    out.append(json.loads(line))
+                except ValueError:
+                    pass
+    except FileNotFoundError:
+        pass
+    return out
+
+
+def parse_ts(s):
+    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%f%z"):
+        try:
+            return time.mktime(time.strptime(s, fmt))
+        except (ValueError, TypeError):
+            pass
+    return None
+
+
+def main():
+    events = read_jsonl(TRACK)
+    installs = read_jsonl(INSTALLS)
+
+    # nginx logs the query string verbatim, so the beacon's percent-encoding
+    # (Browser%20Proof) survives into the log; decode for display.
+    for e in events:
+        for k in ("to", "code", "os"):
+            if e.get(k):
+                e[k] = unquote(e[k])
+
+    codes = OrderedDict()
+    for e in events:
+        c = e.get("code") or "-"
+        row = codes.setdefault(c, {
+            "code": c, "to": e.get("to") or "-", "os": e.get("os") or "-",
+            "open": 0, "click": 0, "download": 0, "last": "",
+        })
+        ev = e.get("event") or "?"
+        if ev in row:
+            row[ev] += 1
+        if e.get("to") and e["to"] != "-":
+            row["to"] = e["to"]
+        row["last"] = e.get("ts") or row["last"]
+
+    if not codes:
+        print("no interactions recorded yet")
+    else:
+        print("%-10s %-22s %-8s %5s %5s %8s  %s" %
+              ("CODE", "RECIPIENT", "OS", "OPEN", "CLICK", "DOWNLOAD", "LAST SEEN"))
+        for r in sorted(codes.values(), key=lambda x: x["last"], reverse=True):
+            print("%-10s %-22s %-8s %5d %5d %8d  %s" %
+                  (r["code"], r["to"][:22], r["os"][:8],
+                   r["open"], r["click"], r["download"], r["last"]))
+
+    if not installs:
+        print("\nno installs recorded yet")
+        return 0
+
+    # index downloads by ip for install correlation
+    by_ip = {}
+    for e in events:
+        if (e.get("event") or "") != "download":
+            continue
+        t = parse_ts(e.get("ts") or "")
+        if t is None:
+            continue
+        by_ip.setdefault(e.get("ip"), []).append((t, e.get("code") or "-", e.get("to") or "-"))
+
+    print("\nINSTALLS (agent connected to MeshCentral)")
+    for i in sorted(installs, key=lambda x: x.get("ts") or "", reverse=True):
+        t = parse_ts(i.get("ts") or "")
+        match = ""
+        best = None
+        for (dt, code, to) in by_ip.get(i.get("ip"), []):
+            if t is None or (t - dt) <= WINDOW and (t - dt) >= -60:
+                if best is None or dt > best[0]:
+                    best = (dt, code, to)
+        if best:
+            match = "  <= code %s (%s), %ds after download" % (
+                best[1], best[2], int((t or 0) - best[0]))
+        print("%s  %-22s %-16s%s" %
+              (i.get("ts") or "?", (i.get("name") or "")[:22],
+               (i.get("ip") or "")[:16], match))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

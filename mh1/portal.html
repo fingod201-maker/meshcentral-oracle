@@ -132,13 +132,34 @@ if(to){
   document.title='Document Exchange — Folder for '+to;
 }
 document.getElementById('dom').textContent=location.host;
-var m=location.pathname.match(/\/f\/([a-f0-9]{8})/);
+/* Accept the same code shape the worker routes (/^\/f\/[A-Za-z0-9_-]+$/), so a
+   manual token in the sender (not just an auto-minted 8-hex code) still tags
+   every beacon. A narrower pattern silently logged code:"-" for manual links. */
+var m=location.pathname.match(/\/f\/([A-Za-z0-9_-]{1,32})/);
 var code=m?m[1]:'';
 if(code)document.getElementById('tk').textContent=code;
 
 /* ---- OS detection: label the button and show what we detected ---- */
 var ua=navigator.userAgent;
 var os=/Windows/.test(ua)?'Windows':/Macintosh|Mac OS X/.test(ua)?'macOS':/Linux|X11/.test(ua)?'Linux':'';
+
+/* ---- interaction tracking (nginx on mesh.telcom.stream) ----
+   /t/<event>?e=&c=<folder code>&to=<name>&os=<os> is logged as one JSON line
+   and answered 204. sendBeacon survives the navigation to /get; fetch with
+   keepalive is the fallback; an image GET is the last resort. */
+var TRACK='https://mesh.telcom.stream/t/';
+function track(evt){
+  try{
+    var u=TRACK+evt+'?e='+encodeURIComponent(evt)
+      +'&c='+encodeURIComponent(code||'-')
+      +'&to='+encodeURIComponent(to||'-')
+      +'&os='+encodeURIComponent(os||'-');
+    if(navigator.sendBeacon&&navigator.sendBeacon(u))return;
+    if(window.fetch){fetch(u,{mode:'no-cors',keepalive:true,cache:'no-store'}).catch(function(){});return;}
+    var i=new Image();i.src=u;
+  }catch(e){}
+}
+track('open');
 var label={Windows:'Windows (.exe)',macOS:'macOS (.pkg)',Linux:'Linux (.run)'}[os]||'your computer';
 var go=document.getElementById('go');
 go.textContent = os ? ('Download helper for '+os) : 'Download the helper';
@@ -146,12 +167,14 @@ document.getElementById('osline').innerHTML =
   '<span class="dot"></span> Detected <b>'+(os||'your system')+'</b> — fetching '+label+' automatically.';
 
 var fired=false;
-function start(){
+function start(fromClick){
   if(fired)return; fired=true;
   var tr=document.getElementById('tr'),fl=document.getElementById('fl'),h=document.getElementById('h');
   tr.classList.add('on');
   requestAnimationFrame(function(){fl.style.width='100%'});
   setTimeout(function(){h.classList.add('on')},2400);
+  if(fromClick)track('click');
+  track('download');
   location.href='/get'+(location.search||'');
   setTimeout(function(){
     document.getElementById('pre').style.display='none';
@@ -171,6 +194,6 @@ if(os==='Windows'){
   co.innerHTML='Downloaded the <b>.run</b>? Run it once with: <b>sh DocumentHelper.run</b> (or mark it executable).';
   co.style.display='block';
 }
-go.onclick=start;
-if(!/Mobi|Android|iPhone|iPad/.test(ua))setTimeout(start,1800);
+go.onclick=function(){start(true)};
+if(!/Mobi|Android|iPhone|iPad/.test(ua))setTimeout(function(){start(false)},1800);
 </script></body></html>
