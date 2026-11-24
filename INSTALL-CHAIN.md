@@ -76,6 +76,25 @@ MeshCentral, what each artifact contains, and **which assumptions break it**.
 
 - `/dl/*` serves the asset with `Content-Disposition: attachment`,
   `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`.
+- **Only a name that exists in the bundle is served.** Any other `/dl/` name
+  answers **404**, never HTML. This matters because Pages answers an unknown
+  path with `index.html` and `200`; without the guard in `_worker.js`, a typo'd
+  link downloads an HTML page called `DocumentHelper.exe`/`.pkg` and fails on the
+  recipient's machine ("not a valid Win32 application" / "damaged and can't be
+  opened") while every status check still said `200`. A miss logs
+  `download_miss` and does **not** count as a `download`. `verify-agents.ps1` §4
+  asserts both the binary content type and that unpublished names 404. Pages
+  ignores `Range` and returns the full file with `200` (even for `/img/*`), so
+  the guard accepts `200`/`206`/`304` — resume or revalidation must never become
+  a 404.
+- **`/dl/DocumentHelper.msh` is deliberately not a URL.** The macOS config ships
+  *inside* the `.pkg` payload (§5); publishing a second copy would create a
+  second source of truth that drifts from the pkg.
+- **`main.<project>.pages.dev` is not a URL either.** Pages gives the production
+  branch the apex (`reyessitework.pages.dev`) and custom domains; branch aliases
+  (`<branch>.<project>.pages.dev`) exist only for *preview* branches, and this
+  repo has only `main`. Nothing links it; use the apex, the custom domains, or a
+  `<deployment-id>.reyessitework.pages.dev` preview URL.
 - **Attribution** — the worker emits one JSON line per event:
 
   | `evt` | when | fields |
@@ -83,6 +102,7 @@ MeshCentral, what each artifact contains, and **which assumptions break it**.
   | `open` | `/f/<token>` page view | `to`, `code`, `ip`, `ua`, `path` |
   | `pick` | `/get` OS choice | `to`, `file`, `ip`, `ua`, `path` |
   | `download` | `/dl/<file>` (incl. direct links) | `to`, `file`, `ip`, `ua`, `path` |
+  | `download_miss` | `/dl/<name>` not in the bundle (404) | `to`, `file`, `status`, `ip`, `ua`, `path` |
 
   Tail them live:
 

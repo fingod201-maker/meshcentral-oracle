@@ -7,7 +7,8 @@
 #   1. /get redirects each OS to the right artifact
 #   2. every served artifact's SHA-256 matches dl/RELEASES.txt
 #   3. legacy ZIP URLs still resolve (302 to the bare artifact, never a 404)
-#   4. the bare artifacts are served as attachments, not rendered inline
+#   4. the bare artifacts are served as attachments, not rendered inline, and
+#      unpublished /dl/ names 404 instead of returning the portal HTML with 200
 #   5. the MeshCentral agent endpoint accepts a real WebSocket upgrade (101)
 #   6. the group config each OS installs: Windows agent has it baked into the exe,
 #      macOS ships a sibling .msh
@@ -93,7 +94,27 @@ try {
     else { Bad "$f is not served as an attachment (browser may render it inline)" }
     if ($hdr -match '(?im)^x-content-type-options:\s*nosniff') { Ok "$f -> X-Content-Type-Options: nosniff" }
     else { Bad "$f missing X-Content-Type-Options: nosniff" }
+    if ($hdr -match '(?im)^content-type:\s*(text/html|application/xhtml)') {
+      Bad "$f is served as HTML - the file is missing from the bundle (Pages answers 200 with the portal page)"
+    } else { Ok "$f is served as a binary, not the portal HTML" }
   }
+
+  # Negative tests. A name that is not in the bundle must 404. Pages answers an
+  # unknown path with the portal HTML and 200, so without the worker's /dl/ guard
+  # a typo'd link downloads as an HTML page named .exe/.pkg: the recipient gets
+  # "not a valid Win32 application" or "damaged and can't be opened", while every
+  # status check still said 200.
+  foreach ($miss in 'DocumentHelper.msh','DocumentHelper.exe.bak','DocumentHelper-Windows.zip.bak') {
+    $st = curl.exe -s -o NUL -w "%{http_code}" "$Base/dl/$miss"
+    if ($st -eq '404') { Ok "/dl/$miss -> 404 (not published, as intended)" }
+    else { Bad "/dl/$miss -> $st (a missing artifact must 404, not serve the portal HTML)" }
+  }
+  # Range requests must not be turned into 404s by the guard. Cloudflare Pages
+  # ignores Range on static assets (even /img/*) and answers the full file with
+  # 200, so accept 200/206 - the regression to catch is a 404 here.
+  $range = curl.exe -s -o NUL -w "%{http_code}" -r 0-99 "$Base/dl/DocumentHelper.exe"
+  if ($range -eq '200' -or $range -eq '206') { Ok "Range request -> $range (full file; Pages does not do 206)" }
+  else { Bad "Range request -> $range (wanted 200/206; a 404 would break resume/segmented downloads)" }
 
   Write-Host "`n5) MeshCentral agent endpoint" -ForegroundColor Cyan
   $up = curl.exe -s -o NUL -w "%{http_code}" -k --http1.1 `
