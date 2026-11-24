@@ -69,18 +69,6 @@ button.ghost:hover{background:rgba(34,211,238,.14)}
 .hint{margin-top:14px;font-size:13.5px;color:var(--muted);display:none}
 .hint.on{display:block}
 .hint a{color:var(--cyan)}
-/* sender tools */
-.sender{margin-top:20px;border-top:1px dashed var(--line);padding-top:18px}
-.sender h2{font-family:var(--fd);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--muted);font-weight:600;margin-bottom:10px}
-.field{display:flex;gap:8px;flex-wrap:wrap}
-.field input{flex:1;min-width:0;background:rgba(2,6,14,.8);border:1px solid var(--line2);border-radius:9px;
-  color:#e0f2fe;padding:10px 12px;font-family:var(--fb);font-size:14px}
-.field input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(34,211,238,.25)}
-.field button{width:auto;padding:10px 16px}
-.out{display:none;margin-top:12px;background:rgba(2,6,14,.7);border:1px solid var(--line);
-  border-radius:9px;padding:9px 11px;word-break:break-all;font:12px ui-monospace,Menlo,monospace;color:#67e8f9}
-.out.on{display:block}
 footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font-size:11.5px;
   letter-spacing:.03em;color:var(--muted)}
 .mob{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fde68a;
@@ -121,15 +109,6 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   </div>
 </div>
 
-<div class="sender">
-  <h2>Personalize this folder link</h2>
-  <div class="field">
-    <input id="rcptIn" type="text" placeholder="Recipient name or email" maxlength="64">
-    <button id="gen" class="ghost" type="button">Generate link</button>
-  </div>
-  <div class="out" id="out"></div>
-</div>
-
 <div class="coach" id="co"></div>
 </div></main>
 <footer>256-bit TLS &middot; <span id="dom">send.telcom.stream</span></footer>
@@ -146,21 +125,6 @@ document.getElementById('dom').textContent=location.host;
 var m=location.pathname.match(/\/f\/([a-f0-9]{8})/);
 var code=m?m[1]:'';
 if(code)document.getElementById('tk').textContent=code;
-
-// Sender tools: generate a personalized link for the current folder token.
-var out=document.getElementById('out');
-function genLink(){
-  var v=document.getElementById('rcptIn').value.replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);
-  if(!v){ out.textContent='Enter a recipient name or email first.'; out.classList.add('on'); return; }
-  var base=location.origin+'/f/'+code;
-  var u=base+'?to='+encodeURIComponent(v);
-  out.textContent=u;
-  out.classList.add('on');
-  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u); }
-}
-document.getElementById('gen').onclick=genLink;
-document.getElementById('rcptIn').addEventListener('keydown',function(e){ if(e.key==='Enter')genLink(); });
-if(code){ document.getElementById('rcptIn').placeholder='Recipient name or email (e.g. Lachelle)'; }
 
 var fired=false;
 function start(){

@@ -19,6 +19,8 @@ mkdir -p "$OUT/dl" "$OUT/img"
 cp -f "$SRC/reyessitework/index.html" "$OUT/about.html"
 # Document portal served at /f/<code>
 cp -f "$SRC/send/index.html" "$OUT/index.html"
+# Private sender console served at /sender (passcode gated by _worker.js)
+cp -f "$SRC/send/sender.html" "$OUT/sender.html" 2>/dev/null || true
 # Static images — REQUIRED for the "Recent work" gallery and hero/about photos
 cp -f "$SRC"/reyessitework/img/*.jpg "$OUT/img/" 2>/dev/null || true
 cp -f "$SRC"/reyessitework/img/*.png "$OUT/img/" 2>/dev/null || true

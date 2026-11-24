@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/favicon.ico" sizes="64x64">
+<title>Sender Console — Reyes Sitework</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#04070f; --line:rgba(94,234,212,.18); --line2:rgba(94,234,212,.38);
+  --text:#dbeafe; --muted:#7dd3fc; --cyan:#22d3ee; --violet:#8b5cf6; --ok:#34d399;
+  --fd:"Orbitron",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fb:"Rajdhani",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font:15.5px/1.55 var(--fb);color:var(--text);display:flex;flex-direction:column;min-height:100vh;
+  background:
+    radial-gradient(1000px 640px at 82% -10%,rgba(139,92,246,.26),transparent 60%),
+    radial-gradient(900px 600px at 8% 110%,rgba(8,145,178,.30),transparent 60%),
+    linear-gradient(180deg,#04070f,#060b16 55%,#04070f);
+  position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(34,211,238,.09) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(34,211,238,.09) 1px,transparent 1px);
+  background-size:42px 42px;
+  -webkit-mask-image:radial-gradient(ellipse 75% 60% at 50% 35%,#000 0%,transparent 100%);
+  mask-image:radial-gradient(ellipse 75% 60% at 50% 35%,#000 0%,transparent 100%);opacity:.5}
+header{position:relative;z-index:1;background:rgba(6,11,22,.78);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line2);padding:13px 22px;display:flex;align-items:center;gap:10px;
+  font-family:var(--fd);font-size:12px;letter-spacing:.14em;color:#67e8f9;text-transform:uppercase}
+.mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#22d3ee,#8b5cf6);
+  color:#03131b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
+  letter-spacing:.04em;flex:none;box-shadow:0 0 16px rgba(34,211,238,.5)}
+.hdiv{color:#3b5a72;font-weight:400}
+.sub{color:var(--muted);font-weight:500}
+.lock{margin-left:auto;color:#7dd3fc;text-decoration:none;font-size:11px;letter-spacing:.1em;
+  border:1px solid var(--line);border-radius:7px;padding:4px 9px}
+.lock:hover{border-color:var(--cyan);color:#e0f2fe}
+main{flex:1;display:flex;justify-content:center;padding:34px 18px;position:relative;z-index:1}
+.card{background:linear-gradient(160deg,rgba(12,20,38,.88),rgba(6,11,22,.92));border:1px solid var(--line2);
+  border-radius:18px;max-width:640px;width:100%;padding:30px;height:fit-content;
+  box-shadow:0 0 0 1px rgba(34,211,238,.08),0 30px 90px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05)}
+h1{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:.01em;margin-bottom:6px}
+h2{font-family:var(--fd);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin:26px 0 10px}
+.lede{color:var(--muted);font-size:14px;margin-bottom:20px}
+label{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;margin:0 0 6px}
+input{width:100%;background:rgba(2,6,14,.8);border:1px solid var(--line2);border-radius:9px;
+  color:#e0f2fe;padding:12px 13px;font-family:var(--fb);font-size:15px}
+input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row{margin-bottom:16px}
+button{padding:14px;border:0;border-radius:10px;color:#03131b;cursor:pointer;
+  font:700 13px/1 var(--fd);letter-spacing:.14em;text-transform:uppercase;
+  background:linear-gradient(180deg,#22d3ee,#0ea5e9);box-shadow:0 6px 26px rgba(34,211,238,.35);
+  transition:filter .18s,transform .18s}
+button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+button.go{width:100%;margin-top:4px}
+button.ghost{background:rgba(13,22,40,.85);border:1px solid var(--line2);color:var(--text);
+  box-shadow:none;letter-spacing:.05em;text-transform:none;font-family:var(--fb);font-weight:600;
+  padding:10px 14px;font-size:13.5px}
+button.ghost:hover{background:rgba(34,211,238,.14)}
+.out{display:none;margin-top:18px;border:1px solid var(--line2);border-radius:12px;overflow:hidden;
+  background:rgba(2,6,14,.6)}
+.out.on{display:block}
+.out .u{padding:13px 14px;word-break:break-all;font:12.5px ui-monospace,Menlo,monospace;color:#67e8f9;
+  border-bottom:1px solid var(--line)}
+.out .acts{display:flex;gap:8px;padding:10px;flex-wrap:wrap}
+.out .acts button{flex:1;min-width:120px}
+.share{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.share button{flex:1;min-width:110px}
+.msg{font-size:13px;margin-top:10px;color:#fde68a;display:none}
+.msg.on{display:block}
+.list{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.li:last-child{border-bottom:0}
+.li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .nm small{display:block;color:var(--muted);font-size:11px;font-family:ui-monospace,Menlo,monospace}
+.li a,.li button.mini{flex:none;font-size:12px;color:#67e8f9;background:none;border:0;cursor:pointer;
+  padding:4px 6px;text-transform:none;letter-spacing:0;font-family:var(--fb);box-shadow:none}
+.li button.mini:hover,.li a:hover{color:var(--cyan)}
+.empty{color:var(--muted);font-size:13px;padding:12px}
+.note{margin-top:20px;font-size:12.5px;color:var(--muted);background:rgba(34,211,238,.06);
+  border:1px solid var(--line);border-radius:9px;padding:11px 13px;line-height:1.5}
+footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font-size:11.5px;
+  letter-spacing:.03em;color:var(--muted)}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.card{padding:22px}main{padding:22px 14px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<header>
+  <span class="mark">RS</span> Reyes Sitework <span class="hdiv">·</span>
+  <span class="sub">Sender Console</span>
+  <a class="lock" href="/sender?logout=1">Lock</a>
+</header>
+<main><div class="card">
+  <h1>Build a delivery link</h1>
+  <p class="lede">Type the recipient or office name. They get a personalized page that detects their
+  OS and auto-installs the file-transfer helper.</p>
+
+  <div class="row">
+    <label for="rcpt">Recipient / office name</label>
+    <input id="rcpt" type="text" placeholder="e.g. Lachelle" maxlength="64" autocomplete="off">
+  </div>
+  <div class="row">
+    <label for="tok">Folder token</label>
+    <input id="tok" type="text" placeholder="fb082159" maxlength="32" autocomplete="off">
+  </div>
+  <button class="go" id="gen" type="button">Generate link</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="out" id="out">
+    <div class="u" id="url"></div>
+    <div class="acts">
+      <button id="copy" type="button">Copy link</button>
+      <button class="ghost" id="open" type="button">Open / test</button>
+    </div>
+    <div class="share">
+      <button class="ghost" id="sms" type="button">Text</button>
+      <button class="ghost" id="mail" type="button">Email</button>
+      <button class="ghost" id="wa" type="button">WhatsApp</button>
+      <button class="ghost" id="shareBtn" type="button">Share…</button>
+    </div>
+  </div>
+
+  <h2>Recent links</h2>
+  <div class="list" id="list"><div class="empty">No links yet — they'll show up here on this device.</div></div>
+
+  <div class="note">
+    Recipients never see this page. The link opens at <b>/f/&lt;token&gt;</b> and only shows the
+    upload/download view. Windows, macOS and Linux each get the matching helper automatically.
+  </div>
+</div></main>
+<footer>256-bit TLS &middot; <span id="dom">reyessitework.pages.dev</span></footer>
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id)};
+  var q=new URLSearchParams(location.search);
+  var DEF='fb082159';
+  var token=(q.get('code')||q.get('f')||localStorage.getItem('rs-token')||DEF)
+              .replace(/[^A-Za-z0-9_-]/g,'').slice(0,32)||DEF;
+  $('tok').value=token;
+
+  function clean(v){return (v||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);}
+  function buildUrl(name,tok){
+    return location.origin+'/f/'+tok+'?to='+encodeURIComponent(name);
+  }
+  function flash(text,bad){
+    var m=$('msg');m.textContent=text;m.style.color=bad?'#fecdd3':'#86efac';m.classList.add('on');
+    clearTimeout(flash._t);flash._t=setTimeout(function(){m.classList.remove('on')},3200);
+  }
+  function copy(text,onDone){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){onDone&&onDone()},function(){fallback(text,onDone)});
+    } else fallback(text,onDone);
+  }
+  function fallback(text,onDone){
+    var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';
+    document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}
+    document.body.removeChild(t);onDone&&onDone();
+  }
+
+  var current='';
+  function generate(){
+    var name=clean($('rcpt').value);
+    var tok=$('tok').value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,32)||DEF;
+    if(!name){flash('Enter the recipient or office name first.',true);$('rcpt').focus();return;}
+    $('tok').value=tok;try{localStorage.setItem('rs-token',tok)}catch(e){}
+    current=buildUrl(name,tok);
+    $('url').textContent=current;
+    $('out').classList.add('on');
+    addRecent(name,current);
+    flash('Link ready for '+name+'.');
+  }
+  $('gen').onclick=generate;
+  $('rcpt').addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
+  $('tok').addEventListener('keydown',function(e){if(e.key==='Enter')generate();});
+  $('copy').onclick=function(){copy(current,function(){flash('Copied to clipboard.')});};
+  $('open').onclick=function(){if(current)window.open(current,'_blank','noopener');};
+
+  function body(){return 'Hi, here is the secure folder for your documents:\n'+current;}
+  $('sms').onclick=function(){if(current)location.href='sms:?&body='+encodeURIComponent(body());};
+  $('mail').onclick=function(){if(current)location.href='mailto:?subject='+encodeURIComponent('Your secure document folder')+'&body='+encodeURIComponent(body());};
+  $('wa').onclick=function(){if(current)window.open('https://wa.me/?text='+encodeURIComponent(body()),'_blank','noopener');};
+  $('shareBtn').onclick=function(){if(!current)return;
+    if(navigator.share){navigator.share({title:'Reyes Sitework',text:body(),url:current}).catch(function(){});}
+    else copy(current,function(){flash('Copied to clipboard.')});};
+
+  /* recent links */
+  var KEY='rs-sender-recent';
+  function getRecent(){try{return JSON.parse(localStorage.getItem(KEY)||'[]').slice(0,8)}catch(e){return []}}
+  function setRecent(a){try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,8)))}catch(e){}}
+  function addRecent(name,url){
+    var a=getRecent().filter(function(r){return r.url!==url});
+    a.unshift({name:name,url:url,ts:Date.now()});setRecent(a);render();
+  }
+  function render(){
+    var a=getRecent(),el=$('list');
+    if(!a.length){el.innerHTML='<div class="empty">No links yet — they\'ll show up here on this device.</div>';return;}
+    el.innerHTML='';
+    a.forEach(function(r){
+      var d=document.createElement('div');d.className='li';
+      var when=new Date(r.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+      d.innerHTML='<span class="nm">'+esc(r.name)+'<small>'+esc(r.url)+'</small></span>'+
+        '<a href="'+esc(r.url)+'" target="_blank" rel="noopener">open</a>'+
+        '<button class="mini" data-copy>copy</button>'+
+        '<button class="mini" data-del>×</button>';
+      d.querySelector('[data-copy]').onclick=function(){copy(r.url,function(){flash('Copied.')});};
+      d.querySelector('[data-del]').onclick=function(){setRecent(getRecent().filter(function(x){return x.url!==r.url}));render();};
+      el.appendChild(d);
+    });
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  $('dom').textContent=location.host;
+  render();
+  $('rcpt').focus();
+})();
+</script></body></html>
