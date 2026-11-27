@@ -188,12 +188,15 @@ try {
   } else { Bad "agent page does not publish the Android APK SHA-256" }
   foreach ($needle in 'finish setup in 90 seconds','Allow restricted settings','Unattended',
            'every row says','All files access','Automatic Consent','outbound TLS',
-           'no inbound ports','3 fps','invisible to a determined EDR') {
+           'no inbound ports','3 fps','invisible to a determined EDR',
+           'App blocked to protect your device','Shizuku','InstallerX','adb install -r -g','protectappeals') {
     if ($cp -match [regex]::Escape($needle)) { Ok "Android guidance: $needle" }
     else { Bad "Android guidance missing: $needle" }
   }
   if ($cp -match 'finish setup in 30 seconds') { Bad "agent page still says 30 seconds" }
   else { Ok "agent page says 90 seconds, not 30" }
+  if ($cp -match [regex]::Escape('/img/android-qr.png')) { Ok "agent page has an APK QR" }
+  else { Bad "agent page has no APK QR" }
   $homePage = (curl.exe -s "$Base/") -join "`n"
   if ($homePage -match [regex]::Escape('href="/connect"')) { Ok "homepage links to /connect" }
   else { Bad "homepage has no /connect link" }
@@ -206,7 +209,7 @@ try {
   if ($page -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
     Ok "portal publishes the Android APK SHA-256"
   } else { Bad "portal does not publish the Android APK SHA-256" }
-  foreach ($needle in 'Allow restricted settings','Unattended Access','every row says','System Update') {
+  foreach ($needle in 'Allow restricted settings','Unattended Access','every row says','System Update','/connect#playprotect') {
     if ($page -match [regex]::Escape($needle)) { Ok "portal Android guidance: $needle" }
     else { Bad "portal Android guidance missing: $needle" }
   }
