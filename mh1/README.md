@@ -59,6 +59,10 @@ Apex/root sites are not changed: only the `docs` names point at Pages.
 
 ### Deploy from Windows
 
+Use this path until the VM source is re-synced: the server copy of `sender.html`
+and `connect.html` predates the domain picker and four-agent matrix, so running
+`deploy-pages3.sh` on the VM would revert them.
+
 The server-side `deploy-pages3.sh` still works, but the supported path from this
 machine does not need SSH:
 
