@@ -57,6 +57,20 @@ All four serve the same Pages bundle. The sender offers every host in its
 
 Apex/root sites are not changed: only the `docs` names point at Pages.
 
+### Deploy from Windows
+
+The server-side `deploy-pages3.sh` still works, but the supported path from this
+machine does not need SSH:
+
+```powershell
+$env:CLOUDFLARE_EMAIL='Authoogle@gmail.com'
+$env:CLOUDFLARE_API_KEY='<Global API Key>'
+.\deploy-local.ps1
+```
+
+It expects a Cloudflare Global API Key (or `CLOUDFLARE_API_TOKEN`), refuses to
+deploy if the APK hash changed, rebuilds the exact bundle and deploys to `main`.
+
 ## Windows
 
 Built and tested. `dl/DocumentHelper.exe` is the NSIS silent installer.
