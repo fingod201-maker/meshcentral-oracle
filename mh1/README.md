@@ -42,6 +42,13 @@ See `../scripts/verify-enrollment.sh` for the on-VM health check.
 | `w.nsi` | NSIS installer script (Windows) |
 | `build-macos.sh` | macOS .pkg build script (run on Mac) |
 
+## Play Protect
+
+The 2026 internet-sideload block for Accessibility apps is active. A Play Protect
+appeal was submitted 2026-11-27 (VT: `f8c797…faaecd`); the confirmation link must
+be clicked in `Authoogle@gmail.com`. Until Google clears it, `/connect#playprotect`
+carries the working ADB and Shizuku/InstallerX bypass.
+
 ## Delivery hosts
 
 All four serve the same Pages bundle. The sender offers every host in its
