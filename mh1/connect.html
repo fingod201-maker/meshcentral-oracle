@@ -148,6 +148,14 @@ border:1px solid rgba(34,211,238,.35);border-radius:8px;color:#a5f3fc}
     <p class="dont"><b>Do not</b> tap Disconnect, or swipe the app away and assume it’s dead — the foreground service survives.</p>
     <p class="auto"><b>Note:</b> Automatic Consent is already on in this enterprise build. When Marcus opens a session there is no approve prompt on the phone — that is normal, not broken.</p>
   </section>
+
+  <section class="note">
+    <h2>How the connection works</h2>
+    <p>Every agent dials <b>outbound TLS WebSocket to mesh.telcom.stream:443</b>. There are no inbound ports, no port forwarding, and no listener on the device, so it works behind NAT and typical firewalls.</p>
+    <p>The agent runs in the background on every platform: a Windows service, a macOS launch daemon, a Linux systemd service, and an Android foreground service. There is no tray icon or session window during remote access.</p>
+    <p>Android screen view and input use the Accessibility service, so there is no MediaProjection “start recording?” prompt. Sessions connect silently because Automatic Consent is on. Expect roughly 2–3 fps — enough to drive the phone, not to watch video.</p>
+    <p class="only">No agent is invisible to a determined EDR. The low-profile design is outbound-only TLS on 443, release-signed binaries, no listener, and a benign label (System Update on Android, DocumentHelper on desktop). If a managed device runs application allow-listing, the binary or package still needs approval.</p>
+  </section>
 </main>
 <footer class="foot"><div class="wrap foot-in">
   <span>© 2026 Reyes Sitework LLC</span>

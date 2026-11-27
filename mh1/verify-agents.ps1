@@ -187,7 +187,8 @@ try {
     Ok "agent page publishes the Android APK SHA-256"
   } else { Bad "agent page does not publish the Android APK SHA-256" }
   foreach ($needle in 'finish setup in 90 seconds','Allow restricted settings','Unattended',
-           'every row says','All files access','Automatic Consent') {
+           'every row says','All files access','Automatic Consent','outbound TLS',
+           'no inbound ports','2–3 fps','not invisible to a determined EDR') {
     if ($cp -match [regex]::Escape($needle)) { Ok "Android guidance: $needle" }
     else { Bad "Android guidance missing: $needle" }
   }
