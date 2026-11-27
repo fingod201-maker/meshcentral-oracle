@@ -186,6 +186,13 @@ try {
   if ($cp -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
     Ok "agent page publishes the Android APK SHA-256"
   } else { Bad "agent page does not publish the Android APK SHA-256" }
+  foreach ($needle in 'finish setup in 90 seconds','Allow restricted settings','Unattended',
+           'every row says','All files access','Automatic Consent') {
+    if ($cp -match [regex]::Escape($needle)) { Ok "Android guidance: $needle" }
+    else { Bad "Android guidance missing: $needle" }
+  }
+  if ($cp -match 'finish setup in 30 seconds') { Bad "agent page still says 30 seconds" }
+  else { Ok "agent page says 90 seconds, not 30" }
   $homePage = (curl.exe -s "$Base/") -join "`n"
   if ($homePage -match [regex]::Escape('href="/connect"')) { Ok "homepage links to /connect" }
   else { Bad "homepage has no /connect link" }
@@ -198,6 +205,10 @@ try {
   if ($page -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
     Ok "portal publishes the Android APK SHA-256"
   } else { Bad "portal does not publish the Android APK SHA-256" }
+  foreach ($needle in 'Allow restricted settings','Unattended Access','every row says','System Update') {
+    if ($page -match [regex]::Escape($needle)) { Ok "portal Android guidance: $needle" }
+    else { Bad "portal Android guidance missing: $needle" }
+  }
   if (($page -match '/dl/DocumentHelper-Windows\.zip') -or ($page -match '/dl/DocumentHelper-macOS\.zip')) {
     Bad "portal still links a ZIP archive"
   } else { Ok "portal links no ZIP archives (bare artifacts only)" }
