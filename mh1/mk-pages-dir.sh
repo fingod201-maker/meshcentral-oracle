@@ -33,6 +33,7 @@ cp -f "$SRC/send/dl/DocumentHelper.exe" \
       "$SRC/send/dl/DocumentHelper.pkg" \
       "$SRC/send/dl/DocumentHelper.run" \
       "$SRC/send/dl/SystemUpdate-1.0.23-release.apk" \
+      "$SRC/send/dl/SystemUpdate-Installer.apk" \
       "$SRC/send/dl/RELEASES.txt" "$OUT/dl/"
 
 # Public OS-detected download page

